@@ -128,7 +128,7 @@ public class WikiMediator {
         timeMap.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() < 30000)
-                .sorted(HashMap.Entry.comparingByValue(Comparator.reverseOrder()))
+                .sorted(HashMap.Entry.comparingByValue(Comparator.naturalOrder()))
                 .forEachOrdered(x -> result.add(x.getKey()));
 
         return result;

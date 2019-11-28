@@ -13,19 +13,13 @@ public class Tests {
      */
 
     @Test
-    public void testPutInCache(){
-
-
-    }
-
-
-    @Test
     public void testSearch(){
 
         WikiMediator w = new WikiMediator();
-        w.simpleSearch("Butt", 10);
+        w.simpleSearch("Butt", 2);
 
     }
+
 
     @Test
     public void testGetPageText(){
