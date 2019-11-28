@@ -23,7 +23,8 @@ public class Tests {
     public void testSearch(){
 
         WikiMediator w = new WikiMediator();
-        System.out.println(w.simpleSearch("Poop", 10));
+        w.simpleSearch("Butt", 10);
+
     }
 
     @Test
@@ -31,6 +32,23 @@ public class Tests {
 
         WikiMediator w = new WikiMediator();
         System.out.println(w.getPage("Bear"));
+        w.simpleSearch("Toot",10);
+    }
+
+
+
+    @Test
+    public void testGetConnectedPages(){
+
+        WikiMediator w = new WikiMediator();
+        System.out.println(w.getConnectedPages("Bear", 1));
+    }
+
+    @Test
+    public void testZeitgeist(){
+
+        WikiMediator w = new WikiMediator();
+        System.out.println(w.zeitgeist(10));
     }
 
     @Test
@@ -42,16 +60,15 @@ public class Tests {
         w.getPage("Beer");
         w.getPage("Bear");
         w.getPage("Beer");
+        w.simpleSearch("Cheese",3);
     }
 
     @Test
-    public void testGetPossiblePages(){
+    public void testTrending(){
 
         WikiMediator w = new WikiMediator();
-        System.out.println(w.getConnectedPages("Bear", 1));
+        System.out.println(w.trending(10));
     }
-
-
 
 
 }
