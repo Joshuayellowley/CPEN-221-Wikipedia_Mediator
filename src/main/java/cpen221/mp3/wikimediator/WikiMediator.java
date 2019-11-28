@@ -1,6 +1,7 @@
 package cpen221.mp3.wikimediator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import cpen221.mp3.cache.Cache;
@@ -13,6 +14,7 @@ import fastily.jwiki.dwrap.Revision;
 public class WikiMediator {
 
     /* TODO: Implement this datatype
+    // TODO: ALL METHODS R PUBLIC IDK HOW TO FIX
 
         You must implement the methods with the exact signatures
         as provided in the statement for this mini-project.
@@ -34,12 +36,16 @@ public class WikiMediator {
 
 
     public List<String> simpleSearch(String query, int limit){
-
         return wiki.search(query, limit);
     }
 
     public String getPage(String pageTitle){
 
+        HashSet<WebPage> cacheSet = cache.storage.keySet();
+
+
+        WebPage w = new WebPage(pageTitle);
+        cache.put(w);
         return wiki.getPageText(pageTitle);
     }
 
@@ -66,10 +72,26 @@ public class WikiMediator {
         return allPages;
     }
 
+    //TODO
     public List<String> zeitgeist(int limit){
 
         return null;
     }
 
+
+
+    private static class WebPage implements Cacheable {
+
+        private String id;
+
+        public WebPage(String id){
+            this.id = id;
+        }
+
+        public String id(){
+            return this.id;
+        }
+
+    }
 
 }

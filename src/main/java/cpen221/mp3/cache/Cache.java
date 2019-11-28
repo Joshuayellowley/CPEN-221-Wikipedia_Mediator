@@ -8,10 +8,11 @@ import java.util.*;
 public class Cache<T extends Cacheable> {
 
     /* the default cache size is 32 objects */
-    public static final int DSIZE = 32;
+    public static final int DSIZE = 256;
 
-    /* the default timeout value is 3600s */
-    public static final int DTIMEOUT = 3600;
+    /* the default timeout value is 12h */
+    //THIS IS IN MILLISECONDS
+    public static final int DTIMEOUT = 1000*60*60*12;
 
     private int capacity;
     private int timeout;
@@ -27,8 +28,9 @@ public class Cache<T extends Cacheable> {
      * @param capacity the number of objects the cache can hold
      * @param timeout the duration, in seconds, an object should be in the cache before it times out
      */
+
     public Cache(int capacity, int timeout) {
-        // TODO: help
+        // TODO: help, METHODS ARE ALL PUBLIC IS THAT OK
         this.capacity = capacity;
         this.timeout = timeout;
         this.storage = new HashMap<T, Instant>();
@@ -47,7 +49,10 @@ public class Cache<T extends Cacheable> {
      * If the cache is full then remove the least recently accessed object to
      * make room for the new object.
      */
-    boolean put(T t) {
+    public boolean put(T t) {
+
+        clearOldEntries();
+
         if(storage.size() < this.capacity) {
             storage.put(t, Instant.now());
             return true;
@@ -81,8 +86,10 @@ public class Cache<T extends Cacheable> {
      * @param id the identifier of the object to be retrieved
      * @return the object that matches the identifier from the cache
      */
-    T get(String id) {
-        /* TODO: Is this allowed */
+    public T get(String id) {
+        /* TODO: Is this allowed?? */
+
+        clearOldEntries();
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){
@@ -104,8 +111,10 @@ public class Cache<T extends Cacheable> {
      * @param id the identifier of the object to "touch"
      * @return true if successful and false otherwise
      */
-    boolean touch(String id) {
+    public boolean touch(String id) {
         /* TODO: CHeck it TreV */
+
+        clearOldEntries();
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){
@@ -125,8 +134,10 @@ public class Cache<T extends Cacheable> {
      * @param t the object to update
      * @return true if successful and false otherwise
      */
-    boolean update(T t) {
+    public boolean update(T t) {
         /* TODO: Help TREBBB */
+
+        clearOldEntries();
 
         for(T v : storage.keySet()){
             if(t.id().equals(v.id())){
@@ -137,6 +148,16 @@ public class Cache<T extends Cacheable> {
         }
 
         return false;
+    }
+
+    private void clearOldEntries(){
+
+        long cutoff = DTIMEOUT;
+        for(T t : storage.keySet()){
+            if(Duration.between(storage.get(t),Instant.now()).toMillis() >= cutoff){
+                storage.remove(t);
+            }
+        }
     }
 
 }
