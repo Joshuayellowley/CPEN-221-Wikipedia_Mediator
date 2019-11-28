@@ -1,5 +1,10 @@
 package cpen221.mp3.cache;
 
+import java.time.Instant;
+import java.time.Duration;
+import java.util.*;
+
+
 public class Cache<T extends Cacheable> {
 
     /* the default cache size is 32 objects */
@@ -7,6 +12,10 @@ public class Cache<T extends Cacheable> {
 
     /* the default timeout value is 3600s */
     public static final int DTIMEOUT = 3600;
+
+    private int capacity;
+    private int timeout;
+    private HashMap<T,Instant> storage;
 
     /* TODO: Implement this datatype */
 
@@ -19,8 +28,12 @@ public class Cache<T extends Cacheable> {
      * @param timeout the duration, in seconds, an object should be in the cache before it times out
      */
     public Cache(int capacity, int timeout) {
-        // TODO: implement this constructor
+        // TODO: help
+        this.capacity = capacity;
+        this.timeout = timeout;
+        this.storage = new HashMap<T, Instant>();
     }
+
 
     /**
      * Create a cache with default capacity and timeout values.
@@ -35,8 +48,33 @@ public class Cache<T extends Cacheable> {
      * make room for the new object.
      */
     boolean put(T t) {
-        // TODO: implement this method
-        return false;
+        if(storage.size() < this.capacity) {
+            storage.put(t, Instant.now());
+            return true;
+        }else{
+            for(T b : storage.keySet()){
+                if(b.id().equals(t.id())){
+                    return false;
+                }
+            }
+
+            Set<T> storageSet = storage.keySet();
+            long min = 0;
+            //TODO helP idk what do here
+            T toRemove = null;
+            for(T q : storageSet){
+                Instant i = storage.get(q);
+                long timeElapsed = Duration.between(i, Instant.now()).toMillis();
+                if(timeElapsed > min){
+                    min = timeElapsed;
+                    toRemove = q;
+                }
+            }
+            storage.remove(toRemove);
+            storage.put(t,Instant.now());
+        }
+        //TODO What ze fuck is this
+        return true;
     }
 
     /**
@@ -44,10 +82,18 @@ public class Cache<T extends Cacheable> {
      * @return the object that matches the identifier from the cache
      */
     T get(String id) {
-        /* TODO: change this */
-        /* Do not return null. Throw a suitable checked exception when an object
+        /* TODO: Is this allowed */
+
+        for(T t : storage.keySet()){
+            if(t.id().equals(id)){
+                return t;
+            }
+        }
+
+         /* Do not return null. Throw a suitable checked exception when an object
             is not in the cache. */
-        return null;
+
+        throw new NoSuchElementException();
     }
 
     /**
@@ -59,7 +105,15 @@ public class Cache<T extends Cacheable> {
      * @return true if successful and false otherwise
      */
     boolean touch(String id) {
-        /* TODO: Implement this method */
+        /* TODO: CHeck it TreV */
+
+        for(T t : storage.keySet()){
+            if(t.id().equals(id)){
+                storage.replace(t,Instant.now());
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -72,7 +126,16 @@ public class Cache<T extends Cacheable> {
      * @return true if successful and false otherwise
      */
     boolean update(T t) {
-        /* TODO: implement this method */
+        /* TODO: Help TREBBB */
+
+        for(T v : storage.keySet()){
+            if(t.id().equals(v.id())){
+                storage.remove(v);
+                storage.put(t,Instant.now());
+                return true;
+            }
+        }
+
         return false;
     }
 
