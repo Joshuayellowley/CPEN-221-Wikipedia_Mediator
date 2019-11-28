@@ -12,10 +12,10 @@ import fastily.jwiki.dwrap.Revision;
 
 
 
-public class WikiMediator<WikiPage extends Cacheable> {
+public class WikiMediator {
 
     /* TODO: Implement this datatype
-    // TODO: ALL METHODS R PUBLIC IDK HOW TO FIX
+    // TODO: ALL METHODS R PUBLIC
 
         You must implement the methods with the exact signatures
         as provided in the statement for this mini-project.
@@ -44,13 +44,12 @@ public class WikiMediator<WikiPage extends Cacheable> {
 
         try {
             WikiPage toGet = (WikiPage) cache.get(pageTitle);
+            return toGet.pageText();
         } catch (Exception e){
-
             WikiPage toGet = new WikiPage(pageTitle);
             cache.put(toGet);
             return wiki.getPageText(pageTitle);
          }
-
     }
 
     public List<String> getConnectedPages(String pageTitle, int hops){

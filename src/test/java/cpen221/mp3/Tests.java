@@ -34,6 +34,17 @@ public class Tests {
     }
 
     @Test
+    public void testGetPageTextFromCache(){
+
+        WikiMediator w = new WikiMediator();
+        w.getPage("Bear");
+        w.getPage("Boar");
+        w.getPage("Beer");
+        w.getPage("Bear");
+        w.getPage("Beer");
+    }
+
+    @Test
     public void testGetPossiblePages(){
 
         WikiMediator w = new WikiMediator();
