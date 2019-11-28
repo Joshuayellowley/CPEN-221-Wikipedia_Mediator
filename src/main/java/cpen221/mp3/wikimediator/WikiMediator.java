@@ -5,13 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 
 import cpen221.mp3.cache.Cache;
+import cpen221.mp3.wikimediator.WikiPage;
 import cpen221.mp3.cache.Cacheable;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.Revision;
 
 
 
-public class WikiMediator {
+public class WikiMediator<WikiPage extends Cacheable> {
 
     /* TODO: Implement this datatype
     // TODO: ALL METHODS R PUBLIC IDK HOW TO FIX
@@ -39,14 +40,17 @@ public class WikiMediator {
         return wiki.search(query, limit);
     }
 
-    public String getPage(String pageTitle){
+    public String getPage(String pageTitle) {
 
-        HashSet<WebPage> cacheSet = cache.storage.keySet();
+        try {
+            WikiPage toGet = (WikiPage) cache.get(pageTitle);
+        } catch (Exception e){
 
+            WikiPage toGet = new WikiPage(pageTitle);
+            cache.put(toGet);
+            return wiki.getPageText(pageTitle);
+         }
 
-        WebPage w = new WebPage(pageTitle);
-        cache.put(w);
-        return wiki.getPageText(pageTitle);
     }
 
     public List<String> getConnectedPages(String pageTitle, int hops){
@@ -78,20 +82,5 @@ public class WikiMediator {
         return null;
     }
 
-
-
-    private static class WebPage implements Cacheable {
-
-        private String id;
-
-        public WebPage(String id){
-            this.id = id;
-        }
-
-        public String id(){
-            return this.id;
-        }
-
-    }
 
 }

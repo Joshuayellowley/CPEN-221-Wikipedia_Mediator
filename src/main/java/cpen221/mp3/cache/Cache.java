@@ -152,9 +152,8 @@ public class Cache<T extends Cacheable> {
 
     private void clearOldEntries(){
 
-        long cutoff = DTIMEOUT;
         for(T t : storage.keySet()){
-            if(Duration.between(storage.get(t),Instant.now()).toMillis() >= cutoff){
+            if(Duration.between(storage.get(t),Instant.now()).toMillis() >= DTIMEOUT){
                 storage.remove(t);
             }
         }
