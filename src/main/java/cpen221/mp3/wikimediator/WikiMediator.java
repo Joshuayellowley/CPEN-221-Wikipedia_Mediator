@@ -32,6 +32,7 @@ public class WikiMediator {
 
      */
 
+    private static List<Instant> requestTimes = new ArrayList<>();
     private static HashMap<String,Instant> lastAccessed = new HashMap<>();
     private static HashMap<String,Integer> timesAccessed = new HashMap<>();
     private Wiki wiki = new Wiki("en.wikipedia.org");
@@ -58,15 +59,21 @@ public class WikiMediator {
 
     }
 
+    private void addRequest(){
+        requestTimes.add(Instant.now());
+    }
+
 
     public List<String> simpleSearch(String query, int limit){
 
+        addRequest();
         updateAccess(query);
         return wiki.search(query, limit);
     }
 
     public String getPage(String pageTitle) {
 
+        addRequest();
         updateAccess(pageTitle);
 
         try {
@@ -81,6 +88,7 @@ public class WikiMediator {
 
     public List<String> getConnectedPages(String pageTitle, int hops){
 
+        addRequest();
         List<String> allPages = wiki.getLinksOnPage(pageTitle);
 
         int count = 1;
@@ -104,6 +112,7 @@ public class WikiMediator {
     //TODO
     public List<String> zeitgeist(int limit){
 
+        addRequest();
         HashMap<String,Integer> start = (HashMap<String,Integer>) timesAccessed.clone();
         List<String> result = new ArrayList<>();
 
@@ -116,6 +125,8 @@ public class WikiMediator {
     }
 
     public List<String> trending(int limit){
+
+        addRequest();
         List<String> result = new ArrayList<>();
 
         HashMap<String,Instant> start = (HashMap<String,Instant>) lastAccessed.clone();
@@ -132,6 +143,30 @@ public class WikiMediator {
                 .forEachOrdered(x -> result.add(x.getKey()));
 
         return result;
+    }
+
+    public int peakLoad30s(){
+
+        addRequest();
+
+        int count = 0;
+        int max = 0;
+
+        for(int i = 0; i < requestTimes.size(); i++){
+            Instant start = requestTimes.get(i);
+            count = 0;
+            for(int p = i+1; p < requestTimes.size() - i; p++){
+
+                if(Duration.between(start,requestTimes.get(p)).toMillis() <= 1000*30){
+                    count++;
+                    if(count > max){
+                        max = count;
+                    }
+                }
+            }
+        }
+
+        return max;
     }
 
 }

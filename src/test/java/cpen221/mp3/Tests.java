@@ -4,6 +4,9 @@ import cpen221.mp3.cache.Cache;
 import cpen221.mp3.wikimediator.WikiMediator;
 import org.junit.Test;
 
+import java.time.Duration;
+import java.time.Instant;
+
 public class Tests {
 
     /*
@@ -13,20 +16,12 @@ public class Tests {
      */
 
     @Test
-    public void testSearch(){
-
-        WikiMediator w = new WikiMediator();
-        w.simpleSearch("Butt", 2);
-
-    }
-
-
-    @Test
     public void testGetPageText(){
 
         WikiMediator w = new WikiMediator();
         System.out.println(w.getPage("Bear"));
         w.simpleSearch("Toot",10);
+        w.simpleSearch("Butt", 2);
     }
 
 
@@ -63,6 +58,40 @@ public class Tests {
         WikiMediator w = new WikiMediator();
         System.out.println(w.trending(10));
     }
+
+    @Test
+    public void testPeakLoad30s(){
+
+        WikiMediator w = new WikiMediator();
+        try
+        {
+            Thread.sleep(30000);
+        }
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+        }
+        System.out.println(w.peakLoad30s());
+    }
+
+    @Test
+    public void instantTimeTesting(){
+        Instant start = Instant.now();
+        try
+        {
+            Thread.sleep(1000);
+        }
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+        }
+        Instant end = Instant.now();
+
+        System.out.println(Duration.between(start,end).toMillis());
+
+    }
+
+
 
 
 }
