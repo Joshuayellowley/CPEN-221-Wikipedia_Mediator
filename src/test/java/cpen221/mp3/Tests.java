@@ -2,10 +2,12 @@ package cpen221.mp3;
 
 import cpen221.mp3.cache.Cache;
 import cpen221.mp3.wikimediator.WikiMediator;
+import fastily.jwiki.core.Wiki;
 import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import static org.junit.Assert.assertEquals;
 
 public class Tests {
 
@@ -18,10 +20,13 @@ public class Tests {
     @Test
     public void testGetPageText(){
 
+        Wiki expected = new Wiki("en.wikipedia.com");
+        expected.enableLogging(false);
+        expected.search("Toot",10);
         WikiMediator w = new WikiMediator();
         System.out.println(w.getPage("Bear"));
-        w.simpleSearch("Toot",10);
-        w.simpleSearch("Butt", 2);
+        assertEquals(expected.search("Toot", 10),w.simpleSearch("Toot",10));
+        assertEquals(expected.search("Butt",2),w.simpleSearch("Butt",2));
     }
 
 
@@ -37,7 +42,7 @@ public class Tests {
     public void testZeitgeist(){
 
         WikiMediator w = new WikiMediator();
-        System.out.println(w.zeitgeist(10));
+        System.out.println(w.zeitgeist(2));
     }
 
     @Test
@@ -56,21 +61,21 @@ public class Tests {
     public void testTrending(){
 
         WikiMediator w = new WikiMediator();
-        System.out.println(w.trending(10));
+        System.out.println(w.trending(1));
     }
 
     @Test
     public void testPeakLoad30s(){
 
         WikiMediator w = new WikiMediator();
-        try
-        {
-            Thread.sleep(30000);
-        }
-        catch(InterruptedException ex)
-        {
-            Thread.currentThread().interrupt();
-        }
+//        try
+//        {
+////            Thread.sleep(30000);
+//        }
+//        catch(InterruptedException ex)
+//        {
+//            Thread.currentThread().interrupt();
+//        }
         System.out.println(w.peakLoad30s());
     }
 
@@ -88,6 +93,8 @@ public class Tests {
         Instant end = Instant.now();
 
         System.out.println(Duration.between(start,end).toMillis());
+        WikiMediator w = new WikiMediator();
+        System.out.println(w.peakLoad30s());
 
     }
 

@@ -2,12 +2,7 @@ package cpen221.mp3.wikimediator;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 
 import cpen221.mp3.cache.Cache;
 import cpen221.mp3.wikimediator.WikiPage;
@@ -46,7 +41,7 @@ public class WikiMediator {
     private void updateAccess(String id){
 
         if(!timesAccessed.containsKey(id)){
-            timesAccessed.put(id, 0);
+            timesAccessed.put(id, 1);
         }else{
             timesAccessed.replace(id,timesAccessed.get(id) + 1);
         }
@@ -79,7 +74,7 @@ public class WikiMediator {
         try {
             WikiPage toGet = (WikiPage) cache.get(pageTitle);
             return toGet.pageText();
-        } catch (Exception e){
+        } catch (NoSuchElementException e){
             WikiPage toGet = new WikiPage(pageTitle);
             cache.put(toGet);
             return wiki.getPageText(pageTitle);
@@ -119,6 +114,7 @@ public class WikiMediator {
         start.entrySet()
                 .stream()
                 .sorted(HashMap.Entry.comparingByValue(Comparator.reverseOrder()))
+                .limit(limit)
                 .forEachOrdered(x -> result.add(x.getKey()));
 
         return result;
@@ -140,6 +136,7 @@ public class WikiMediator {
                 .stream()
                 .filter(entry -> entry.getValue() < 30000)
                 .sorted(HashMap.Entry.comparingByValue(Comparator.naturalOrder()))
+                .limit(limit)
                 .forEachOrdered(x -> result.add(x.getKey()));
 
         return result;

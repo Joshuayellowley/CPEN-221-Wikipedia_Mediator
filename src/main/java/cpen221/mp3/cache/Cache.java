@@ -57,10 +57,8 @@ public class Cache<T extends Cacheable> {
             storage.put(t, Instant.now());
             return true;
         }else{
-            for(T b : storage.keySet()){
-                if(b.id().equals(t.id())){
-                    return false;
-                }
+            if(storage.containsKey(t)){
+                return false;
             }
 
             Set<T> storageSet = storage.keySet();
@@ -75,6 +73,7 @@ public class Cache<T extends Cacheable> {
                     toRemove = q;
                 }
             }
+
             storage.remove(toRemove);
             storage.put(t,Instant.now());
         }
@@ -116,14 +115,15 @@ public class Cache<T extends Cacheable> {
 
         clearOldEntries();
 
-        for(T t : storage.keySet()){
-            if(t.id().equals(id)){
-                storage.replace(t,Instant.now());
-                return true;
-            }
+        try {
+            T t = this.get(id);
+            storage.replace(t,Instant.now());
+            return true;
+        }catch(NoSuchElementException e){
+            return false;
         }
 
-        return false;
+
     }
 
     /**
@@ -139,12 +139,9 @@ public class Cache<T extends Cacheable> {
 
         clearOldEntries();
 
-        for(T v : storage.keySet()){
-            if(t.id().equals(v.id())){
-                storage.remove(v);
-                storage.put(t,Instant.now());
-                return true;
-            }
+        if(storage.containsKey(t)){
+            storage.put(t,Instant.now());
+            return true;
         }
 
         return false;
@@ -158,5 +155,6 @@ public class Cache<T extends Cacheable> {
             }
         }
     }
+
 
 }
