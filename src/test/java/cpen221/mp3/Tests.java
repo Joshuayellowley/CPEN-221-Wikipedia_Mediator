@@ -15,10 +15,11 @@ public class Tests {
         as cpen221.mp3.cache.
      */
 
+    private WikiMediator w = new WikiMediator();
+
     @Test
     public void testGetPageText(){
 
-        WikiMediator w = new WikiMediator();
         System.out.println(w.getPage("Bear"));
         w.simpleSearch("Toot",10);
         w.simpleSearch("Butt", 2);
@@ -29,21 +30,18 @@ public class Tests {
     @Test
     public void testGetConnectedPages(){
 
-        WikiMediator w = new WikiMediator();
-        System.out.println(w.getConnectedPages("Bear", 1));
+        System.out.println(w.getConnectedPages("MissingNo.", 1));
     }
 
     @Test
     public void testZeitgeist(){
 
-        WikiMediator w = new WikiMediator();
         System.out.println(w.zeitgeist(10));
     }
 
     @Test
     public void testGetPageTextFromCache(){
 
-        WikiMediator w = new WikiMediator();
         w.getPage("Bear");
         w.getPage("Boar");
         w.getPage("Beer");
@@ -55,14 +53,12 @@ public class Tests {
     @Test
     public void testTrending(){
 
-        WikiMediator w = new WikiMediator();
         System.out.println(w.trending(10));
     }
 
     @Test
     public void testPeakLoad30s(){
 
-        WikiMediator w = new WikiMediator();
         try
         {
             Thread.sleep(30000);

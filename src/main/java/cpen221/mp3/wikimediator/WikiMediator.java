@@ -56,7 +56,6 @@ public class WikiMediator {
         }else{
             lastAccessed.replace(id, Instant.now());
         }
-
     }
 
     private void addRequest(){
@@ -69,6 +68,7 @@ public class WikiMediator {
         addRequest();
         updateAccess(query);
         return wiki.search(query, limit);
+
     }
 
     public String getPage(String pageTitle) {
@@ -89,21 +89,29 @@ public class WikiMediator {
     public List<String> getConnectedPages(String pageTitle, int hops){
 
         addRequest();
+
+        if(hops == 0){
+            List<String> single = new ArrayList<>();
+            single.add(pageTitle);
+            return single;
+        }
+
         List<String> allPages = wiki.getLinksOnPage(pageTitle);
 
         int count = 1;
 
         while(count != hops){
+            List<String> toAdd = new ArrayList<>();
             for(String s : allPages){
                 List<String> tempList = wiki.getLinksOnPage(s);
-
                 for(String s2 : tempList){
                     if(!allPages.contains(s2)){
-                        allPages.add(s2);
+                        toAdd.add(s2);
                     }
                 }
             }
             count++;
+            allPages.addAll(toAdd);
         }
 
         return allPages;

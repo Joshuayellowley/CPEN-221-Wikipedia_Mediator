@@ -17,6 +17,8 @@ public class Cache<T extends Cacheable> {
     private int capacity;
     private int timeout;
     private HashMap<T,Instant> storage;
+    private HashMap<T,Instant> lastTimeOpened;
+    private Thread t = new Thread(new CacheThread());
 
     /* TODO: Implement this datatype */
 
@@ -34,6 +36,7 @@ public class Cache<T extends Cacheable> {
         this.capacity = capacity;
         this.timeout = timeout;
         this.storage = new HashMap<T, Instant>();
+        this.t.start();
     }
 
 
@@ -51,7 +54,7 @@ public class Cache<T extends Cacheable> {
      */
     public boolean put(T t) {
 
-        clearOldEntries();
+//        clearOldEntries();
 
         if(storage.size() < this.capacity) {
             storage.put(t, Instant.now());
@@ -63,12 +66,11 @@ public class Cache<T extends Cacheable> {
                 }
             }
 
-            Set<T> storageSet = storage.keySet();
             long min = 0;
             //TODO helP idk what do here
             T toRemove = null;
-            for(T q : storageSet){
-                Instant i = storage.get(q);
+            for(T q : lastTimeOpened.keySet()){
+                Instant i = lastTimeOpened.get(q);
                 long timeElapsed = Duration.between(i, Instant.now()).toMillis();
                 if(timeElapsed > min){
                     min = timeElapsed;
@@ -76,9 +78,12 @@ public class Cache<T extends Cacheable> {
                 }
             }
             storage.remove(toRemove);
+            lastTimeOpened.remove(toRemove);
             storage.put(t,Instant.now());
+            lastTimeOpened.put(t,Instant.now());
+
         }
-        //TODO What ze fuck is this
+        //TODO What the heck is this
         return true;
     }
 
@@ -89,10 +94,11 @@ public class Cache<T extends Cacheable> {
     public T get(String id) {
         /* TODO: Is this allowed?? */
 
-        clearOldEntries();
+//        clearOldEntries();
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){
+                lastTimeOpened.replace(t,Instant.now());
                 return t;
             }
         }
@@ -114,7 +120,7 @@ public class Cache<T extends Cacheable> {
     public boolean touch(String id) {
         /* TODO: CHeck it TreV */
 
-        clearOldEntries();
+//        clearOldEntries();
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){
@@ -137,12 +143,12 @@ public class Cache<T extends Cacheable> {
     public boolean update(T t) {
         /* TODO: Help TREBBB */
 
-        clearOldEntries();
+//        clearOldEntries();
 
         for(T v : storage.keySet()){
             if(t.id().equals(v.id())){
                 storage.remove(v);
-                storage.put(t,Instant.now());
+                storage.replace(t,Instant.now());
                 return true;
             }
         }
@@ -157,6 +163,20 @@ public class Cache<T extends Cacheable> {
                 storage.remove(t);
             }
         }
+    }
+
+     class CacheThread implements Runnable{
+
+        public void run(){
+            while(true) {
+                for (T t : storage.keySet()) {
+                    if (Duration.between(storage.get(t), Instant.now()).toMillis() >= DTIMEOUT) {
+                        storage.remove(t);
+                    }
+                }
+            }
+        }
+
     }
 
 }
