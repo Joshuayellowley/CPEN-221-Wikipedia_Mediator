@@ -5,7 +5,16 @@ import fastily.jwiki.core.Wiki;
 
 
 /**
+ * Representation Invariant:
+ *  pageTitle, pageText not null
+ *  wiki has the domain en.wikipedia.org
  *
+ * Abstraction Function:
+ *  pageTitle refers to the title of a page that
+ *  may or may not exist on en.wikipedia.org
+ *  pageText contains the text of the wikipedia page
+ *  with title pageTitle. If pageTitle does not exist
+ *  on wikipedia, then pageText = ""
  */
 public class WikiPage implements Cacheable{
 
@@ -22,11 +31,20 @@ public class WikiPage implements Cacheable{
             this.pageText = wiki.getPageText(pageTitle);
         }
 
-        public String id(){
+    /**
+     * Gets the id in order to be stored into a cache
+     * @return the id of this object to store in a cache
+     */
+    public String id(){
             return this.pageTitle;
         }
 
-        String pageText(){
+    /**
+     *  Gets the text of the page titled pageTitle from wikipedia.
+     * @return the text of the page on wikipedia. If such a page does not exist,
+     * returns ""
+     */
+    String pageText(){
             return this.pageText;
         }
 
