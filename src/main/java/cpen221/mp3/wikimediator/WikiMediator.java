@@ -10,16 +10,16 @@ import cpen221.mp3.cache.Cacheable;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.Revision;
 
-
+//TODO
 /**
  * Representation Invariant:
  *  requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
  *  lastAccessed.size() == timesAccessed.size()
  *  lastAccessed.contains(String s) == timesAccessed.contains(String s)
- *  Wiki is the class used to fetch pages from en.wikipedia.org
+ *  wiki is the Wiki used to fetch pages from en.wikipedia.org
  *
  * Abstraction Function:
- *
+ *  Represents a Wiki that allows for more functionality
  */
 public class WikiMediator {
 
