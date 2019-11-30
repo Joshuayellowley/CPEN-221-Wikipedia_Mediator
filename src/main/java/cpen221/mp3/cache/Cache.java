@@ -35,9 +35,8 @@ public class Cache<T extends Cacheable> {
     /* the default cache size is 32 objects */
     public static final int DSIZE = 32;
 
-
     /* the default timeout value is 12h */
-
+    //THIS IS IN SECONDS
     public static final int DTIMEOUT = 60*60*12;
 
     private int capacity;
@@ -106,7 +105,7 @@ public class Cache<T extends Cacheable> {
             T toRemove = null;
             for(T q : lastTimeOpened.keySet()){
                 Instant i = lastTimeOpened.get(q);
-                long timeElapsed = Duration.between(i, Instant.now()).toMillis();
+                long timeElapsed = Duration.between(i, Instant.now()).toSeconds();
                 if(timeElapsed > min){
                     min = timeElapsed;
                     toRemove = q;
@@ -176,7 +175,6 @@ public class Cache<T extends Cacheable> {
      * @return true if successful and the object has been modified and false otherwise
      */
     public boolean update(T t) {
-        /* TODO: Help TREBBB */
 
         clearOldEntries();
 
@@ -187,7 +185,6 @@ public class Cache<T extends Cacheable> {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -199,7 +196,7 @@ public class Cache<T extends Cacheable> {
     private void clearOldEntries(){
 
         for(T t : storage.keySet()){
-            if(Duration.between(storage.get(t),Instant.now()).toMillis() >= this.timeout){
+            if(Duration.between(storage.get(t),Instant.now()).toSeconds() >= this.timeout){
                 storage.remove(t);
             }
         }
