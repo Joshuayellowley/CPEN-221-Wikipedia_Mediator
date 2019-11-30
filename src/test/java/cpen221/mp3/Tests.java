@@ -16,6 +16,7 @@ public class Tests {
      */
 
     private WikiMediator w = new WikiMediator();
+    private WikiMediator w2 = new WikiMediator();
 
     @Test
     public void testGetPageText(){
@@ -30,7 +31,7 @@ public class Tests {
     @Test
     public void testGetConnectedPages(){
 
-        System.out.println(w.getConnectedPages("MissingNo.", 1));
+        System.out.println(w.getConnectedPages("MissingNo.", 2));
     }
 
     @Test

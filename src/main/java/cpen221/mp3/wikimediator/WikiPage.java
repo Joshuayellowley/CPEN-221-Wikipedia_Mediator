@@ -5,17 +5,21 @@ import fastily.jwiki.core.Wiki;
 
 public class WikiPage implements Cacheable{
 
-        private String id;
+        private String pageTitle;
         private String pageText;
         private Wiki wiki = new Wiki("en.wikipedia.org");
 
-        WikiPage(String id){
-            this.id = id;
-            this.pageText = wiki.getPageText(id);
+        /*
+         * Constructor for WikiPage which denotes the WikiPage id, and collects the pageText
+         * for access by the getPage method in WikiMediator
+         */
+        WikiPage(String pageTitle){
+            this.pageTitle = pageTitle;
+            this.pageText = wiki.getPageText(pageTitle);
         }
 
         public String id(){
-            return this.id;
+            return this.pageTitle;
         }
 
         String pageText(){

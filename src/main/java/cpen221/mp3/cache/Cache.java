@@ -18,7 +18,7 @@ public class Cache<T extends Cacheable> {
     private int timeout;
     private HashMap<T,Instant> storage;
     private HashMap<T,Instant> lastTimeOpened;
-    private Thread t = new Thread(new CacheThread());
+    //private Thread t = new Thread(new CacheThread());
 
     /* TODO: Implement this datatype */
 
@@ -30,13 +30,12 @@ public class Cache<T extends Cacheable> {
      * @param capacity the number of objects the cache can hold
      * @param timeout the duration, in seconds, an object should be in the cache before it times out
      */
-
     public Cache(int capacity, int timeout) {
         // TODO: help, METHODS ARE ALL PUBLIC IS THAT OK
         this.capacity = capacity;
         this.timeout = timeout;
         this.storage = new HashMap<T, Instant>();
-        this.t.start();
+        //this.t.start();
     }
 
 
@@ -50,11 +49,19 @@ public class Cache<T extends Cacheable> {
     /**
      * Add a value to the cache.
      * If the cache is full then remove the least recently accessed object to
-     * make room for the new object.
+     * make room for the new object.  If the id of the instance T is an id already contained
+     * by the Cache, return false.
+     *
+     * @param t of type T which extends Cacheable
+     * @return true if the object was successfully added to the Cache and false otherwise
      */
     public boolean put(T t) {
 
-//        clearOldEntries();
+        clearOldEntries();
+
+        if(t == null){
+            return false;
+        }
 
         if(storage.size() < this.capacity) {
             storage.put(t, Instant.now());
@@ -88,13 +95,15 @@ public class Cache<T extends Cacheable> {
     }
 
     /**
+     * Finds the given object T, within the cache with the given id.
+     *
+     * @throws NoSuchElementException //TODO fix this
      * @param id the identifier of the object to be retrieved
-     * @return the object that matches the identifier from the cache
+     * @return the object that matches the identifier from the cache, if no object
+     * is found throws a NoSuchElementException
      */
     public T get(String id) {
-        /* TODO: Is this allowed?? */
-
-//        clearOldEntries();
+        clearOldEntries();
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){
@@ -105,22 +114,22 @@ public class Cache<T extends Cacheable> {
 
          /* Do not return null. Throw a suitable checked exception when an object
             is not in the cache. */
-
         throw new NoSuchElementException();
     }
 
     /**
      * Update the last refresh time for the object with the provided id.
      * This method is used to mark an object as "not stale" so that its timeout
-     * is delayed.
+     * is delayed.  Updates the last accessed time of the object to the current time.
      *
      * @param id the identifier of the object to "touch"
-     * @return true if successful and false otherwise
+     * @return true if the id is contained in the cache and the last accessed time is changed.
+     *         If the id is not contained in the cache returns false
+     *
      */
     public boolean touch(String id) {
-        /* TODO: CHeck it TreV */
 
-//        clearOldEntries();
+        clearOldEntries();
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){
@@ -133,17 +142,16 @@ public class Cache<T extends Cacheable> {
     }
 
     /**
-     * Update an object in the cache.
-     * This method updates an object and acts like a "touch" to renew the
-     * object in the cache.
+     * Updates an item in the cache.  This does not influence the staleness
+     * or last time the item was accessed.
      *
      * @param t the object to update
-     * @return true if successful and false otherwise
+     * @return true if successful and the object has been modified and false otherwise
      */
     public boolean update(T t) {
         /* TODO: Help TREBBB */
 
-//        clearOldEntries();
+        clearOldEntries();
 
         for(T v : storage.keySet()){
             if(t.id().equals(v.id())){
@@ -156,6 +164,11 @@ public class Cache<T extends Cacheable> {
         return false;
     }
 
+
+    /**
+     * Clears entry that have been in the cache for a time period longer than
+     * the specified timeout.
+     */
     private void clearOldEntries(){
 
         for(T t : storage.keySet()){
@@ -164,19 +177,18 @@ public class Cache<T extends Cacheable> {
             }
         }
     }
-
-     class CacheThread implements Runnable{
-
-        public void run(){
-            while(true) {
-                for (T t : storage.keySet()) {
-                    if (Duration.between(storage.get(t), Instant.now()).toMillis() >= DTIMEOUT) {
-                        storage.remove(t);
-                    }
-                }
-            }
-        }
-
-    }
+//     class CacheThread implements Runnable{
+//
+//        public void run(){
+//            while(true) {
+//                for (T t : storage.keySet()) {
+//                    if (Duration.between(storage.get(t), Instant.now()).toMillis() >= DTIMEOUT) {
+//                        storage.remove(t);
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 
 }
