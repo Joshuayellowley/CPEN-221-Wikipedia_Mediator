@@ -90,6 +90,17 @@ public class WikiMediator {
 
     }
 
+
+    /**
+     * Given a page title on en.wikipedia.org, returns the correlating page text.
+     * If the page is stored in the cache, takes the pageText from the cache instead of
+     * accessing wikipedia again.
+     *
+     * @param pageTitle is the page title of the page with the desired text
+     *
+     * @return a String of the desired page text.  If there is no page of the specified
+     *         pageTitle returns an empty String
+     */
     public String getPage(String pageTitle) {
 
         addRequest();
@@ -101,11 +112,24 @@ public class WikiMediator {
         } catch (Exception e){
             WikiPage toGet = new WikiPage(pageTitle);
             cache.put(toGet);
-            return wiki.getPageText(pageTitle);
+            String pageText = wiki.getPageText(pageTitle);
+            return pageText;
          }
     }
 
 
+    /**
+     * Given a page title on en.wikipedia.org, returns the correlating page text.
+     * If the page is stored in the cache, takes the pageText from the cache instead of
+     * accessing wikipedia again.
+     *
+     * @param pageTitle is the page title of the page to start at.
+     * @param hops the amount of jumps from the original webpage that can be made
+     *
+     * @return a List of Strings of pages that can be accessed through
+     *         a given amount of hops.  If the given pageTitle is not a valid wikipedia page
+     *         on en.wikipedia.org an empty list is returned.
+     */
     public List<String> getConnectedPages(String pageTitle, int hops){
 
         addRequest();
@@ -137,7 +161,18 @@ public class WikiMediator {
         return allPages;
     }
 
-    //TODO
+    /**
+     * Given a limit of the maximum amount of items to return in a list, returns
+     * the most commonly used Strings in getPage and simpleSearch requests in
+     * non-increasing order of frequency.
+     *
+     * @param limit > 0, the maximum size of the list of Strings to be returned.
+     *
+     * @return a List of Strings sorted by the amount of times the String has been
+     *         used in simpleSearch and getPage requests.  The list is sorted in
+     *         non-increasing order of count.
+     *
+     */
     public List<String> zeitgeist(int limit){
 
         addRequest();
@@ -152,6 +187,18 @@ public class WikiMediator {
         return result;
     }
 
+
+    /**
+     * Given a limit of the maximum amount of items to return in a list, returns
+     * the most commonly used Strings in getPage and simpleSearch requests in
+     * non-increasing order of frequency.
+     *
+     * @param limit > 0, the maximum size of the list of Strings to be returned.
+     *
+     * @return a List of Strings sorted by the amount of times the String has been
+     *         used in simpleSearch and getPage requests.  The list is sorted in
+     *         non-increasing order of count.
+     */
     public List<String> trending(int limit){
 
         addRequest();
@@ -161,18 +208,26 @@ public class WikiMediator {
         HashMap<String,Long> timeMap = new HashMap<>();
 
         for(String s : start.keySet()){
-            timeMap.put(s, Duration.between(start.get(s),Instant.now()).toMillis());
+            timeMap.put(s, Duration.between(start.get(s),Instant.now()).toSeconds());
         }
 
         timeMap.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue() < 30000)
+                .filter(entry -> entry.getValue() < 30)
                 .sorted(HashMap.Entry.comparingByValue(Comparator.naturalOrder()))
                 .forEachOrdered(x -> result.add(x.getKey()));
 
         return result;
     }
 
+    /**
+     * Looking at all instances of WikiMediator, returns an integer
+     * correlating to the highest amount basic page requests that occurred
+     * in any 30 second period.
+     *
+     * @return an int of the highest amount of basic requests to occur in any
+     *         30 second period.
+     */
     public int peakLoad30s(){
 
         addRequest();
@@ -182,10 +237,10 @@ public class WikiMediator {
 
         for(int i = 0; i < requestTimes.size(); i++){
             Instant start = requestTimes.get(i);
-            count = 0;
+            count = 1;
             for(int p = i+1; p < requestTimes.size() - i; p++){
 
-                if(Duration.between(start,requestTimes.get(p)).toMillis() <= 1000*30){
+                if(Duration.between(start,requestTimes.get(p)).toSeconds() <= 30){
                     count++;
                     if(count > max){
                         max = count;

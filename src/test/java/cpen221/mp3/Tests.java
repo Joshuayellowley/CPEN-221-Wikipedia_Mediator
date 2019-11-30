@@ -6,6 +6,9 @@ import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
 
 public class Tests {
 
@@ -26,12 +29,21 @@ public class Tests {
         w.simpleSearch("Butt", 2);
     }
 
+    @Test
+    public void testGetPageText2(){
+        assertEquals("",(w.getPage("BuBsbs")));
+    }
+
 
 
     @Test
     public void testGetConnectedPages(){
-
         System.out.println(w.getConnectedPages("MissingNo.", 2));
+    }
+
+    @Test
+    public void testGetConnectedPages2(){
+       assertEquals(w.getConnectedPages("haHAH.", 1), new ArrayList<>());
     }
 
     @Test
