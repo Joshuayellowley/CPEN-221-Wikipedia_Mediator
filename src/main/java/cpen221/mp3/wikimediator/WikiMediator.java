@@ -11,7 +11,16 @@ import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.Revision;
 
 
-
+/**
+ * Representation Invariant:
+ *  requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
+ *  lastAccessed.size() == timesAccessed.size()
+ *  lastAccessed.contains(String s) == timesAccessed.contains(String s)
+ *  Wiki is the class used to fetch pages from en.wikipedia.org
+ *
+ * Abstraction Function:
+ *
+ */
 public class WikiMediator {
 
     /* TODO: Implement this datatype
@@ -31,7 +40,7 @@ public class WikiMediator {
     private static HashMap<String,Instant> lastAccessed = new HashMap<>();
     private static HashMap<String,Integer> timesAccessed = new HashMap<>();
     private Wiki wiki = new Wiki("en.wikipedia.org");
-    private Cache cache = new Cache();
+    private Cache cache = new Cache(256, 12*60*60);
 
     public WikiMediator(){
     }

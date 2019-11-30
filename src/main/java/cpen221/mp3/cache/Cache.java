@@ -4,38 +4,67 @@ import java.time.Instant;
 import java.time.Duration;
 import java.util.*;
 
-
+/**
+ * Representation Invariant:
+ *  capacity > 0
+ *  timeout > 0
+ *  storage not null
+ *  lastTimeOpened not null
+ *  storage.size() == lastTimeOpened.size()
+ *  storage.contains(T) == lastTimeOpened.contains(T)
+ *  storage.get(T) <= Instant.now()
+ *  lastTimeOpened.get(T) <= Instant.now()
+ *
+ *
+ * Abstraction Function:
+ *  Represents a cache that stores
+ *  capacity generic objects 'T', in storage and lastTimeOpened
+ *  for timeout seconds.
+ *  Every T in storage is mapped to the time it was put into the cache.
+ *  Every T in lastTimeOpened is mapped to the last time it was accessed/touched
+ *  Any object that has been in the cache for timeout milliseconds is removed
+ *  next time cache is used/updated.
+ *  Default capacity is 32 Objects, and default timeout is 12 hours,
+ *  43200 seconds.
+ *
+ *
+ *  This data type is mutable.
+ */
 public class Cache<T extends Cacheable> {
 
     /* the default cache size is 32 objects */
-    public static final int DSIZE = 256;
+    public static final int DSIZE = 32;
+
 
     /* the default timeout value is 12h */
-    //THIS IS IN MILLISECONDS
-    public static final int DTIMEOUT = 1000*60*60*12;
+
+    public static final int DTIMEOUT = 60*60*12;
 
     private int capacity;
     private int timeout;
     private HashMap<T,Instant> storage;
     private HashMap<T,Instant> lastTimeOpened;
-    //private Thread t = new Thread(new CacheThread());
-
-    /* TODO: Implement this datatype */
 
     /**
      * Create a cache with a fixed capacity and a timeout value.
+     * If capacity and timeout are non-positive, create a cache with default values
      * Objects in the cache that have not been refreshed within the timeout period
-     * are removed from the cache.
+     * are removed from the cache upon next update/use.
      *
      * @param capacity the number of objects the cache can hold
      * @param timeout the duration, in seconds, an object should be in the cache before it times out
      */
     public Cache(int capacity, int timeout) {
-        // TODO: help, METHODS ARE ALL PUBLIC IS THAT OK
-        this.capacity = capacity;
-        this.timeout = timeout;
-        this.storage = new HashMap<T, Instant>();
-        //this.t.start();
+        this.capacity = DSIZE;
+        this.timeout = DTIMEOUT;
+        if(capacity > 0){
+            this.capacity = capacity;
+        }
+        if(timeout > 0){
+            this.timeout = timeout;
+        }
+        this.storage = new HashMap<>();
+        this.lastTimeOpened = new HashMap<>();
     }
 
 
@@ -74,7 +103,6 @@ public class Cache<T extends Cacheable> {
             }
 
             long min = 0;
-            //TODO helP idk what do here
             T toRemove = null;
             for(T q : lastTimeOpened.keySet()){
                 Instant i = lastTimeOpened.get(q);
@@ -90,7 +118,6 @@ public class Cache<T extends Cacheable> {
             lastTimeOpened.put(t,Instant.now());
 
         }
-        //TODO What the heck is this
         return true;
     }
 
@@ -177,18 +204,5 @@ public class Cache<T extends Cacheable> {
             }
         }
     }
-//     class CacheThread implements Runnable{
-//
-//        public void run(){
-//            while(true) {
-//                for (T t : storage.keySet()) {
-//                    if (Duration.between(storage.get(t), Instant.now()).toMillis() >= DTIMEOUT) {
-//                        storage.remove(t);
-//                    }
-//                }
-//            }
-//        }
-//
-//    }
 
 }
