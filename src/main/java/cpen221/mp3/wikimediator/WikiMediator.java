@@ -86,6 +86,7 @@ public class WikiMediator {
          }
     }
 
+
     public List<String> getConnectedPages(String pageTitle, int hops){
 
         addRequest();
