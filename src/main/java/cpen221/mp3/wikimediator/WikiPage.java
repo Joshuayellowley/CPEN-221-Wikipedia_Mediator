@@ -9,6 +9,10 @@ public class WikiPage implements Cacheable{
         private String pageText;
         private Wiki wiki = new Wiki("en.wikipedia.org");
 
+        /*
+         * Constructor for WikiPage which denotes the WikiPage id, and collects the pageText
+         * for access by the getPage method in WikiMediator
+         */
         WikiPage(String pageTitle){
             this.pageTitle = pageTitle;
             this.pageText = wiki.getPageText(pageTitle);

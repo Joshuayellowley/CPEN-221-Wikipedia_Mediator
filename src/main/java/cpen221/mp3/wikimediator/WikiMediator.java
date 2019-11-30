@@ -39,10 +39,16 @@ public class WikiMediator {
     private Cache cache = new Cache();
 
     public WikiMediator(){
-
     }
 
 
+    /**
+     * Helper method used to update the last time an object in the cache has been updated.
+     * Adds 1 to the amount of times an object has been accessed while within the cache.
+     * Updates the last accessed time to the current time.
+     *
+     * @param id denoting the object in the cache that is being accessed
+     */
     private void updateAccess(String id){
 
         if(!timesAccessed.containsKey(id)){
@@ -58,11 +64,24 @@ public class WikiMediator {
         }
     }
 
+    /**
+     * Helper method used in all basic requests to keep track of all requests made to the cache.
+     * Adds an Instant to requestTimes at the current time.
+     */
     private void addRequest(){
         requestTimes.add(Instant.now());
     }
 
 
+    /**
+     * Searches on en.wikipedia.org for relevant pages to the given String query.
+     * The results will be returned in terms of most relevant in non-ascending order.
+     * The amount of items returned will be the size of given limit.
+     *
+     * @param query is the String to be entered into the wikipedia search algorithm
+     * @param limit the amount of pages to return
+     * @return a list of Strings representing the relevant pages in non-ascending order
+     */
     public List<String> simpleSearch(String query, int limit){
 
         addRequest();
