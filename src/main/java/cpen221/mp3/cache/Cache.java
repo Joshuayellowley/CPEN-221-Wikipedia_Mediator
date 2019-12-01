@@ -22,7 +22,7 @@ import java.util.*;
  *  for timeout seconds.
  *  Every T in storage is mapped to the time it was put into the cache.
  *  Every T in lastTimeOpened is mapped to the last time it was accessed/touched
- *  Any object that has been in the cache for timeout milliseconds is removed
+ *  Any object that has been in the cache for timeout seconds is removed
  *  next time cache is used/updated.
  *  Default capacity is 32 Objects, and default timeout is 12 hours,
  *  43200 seconds.
