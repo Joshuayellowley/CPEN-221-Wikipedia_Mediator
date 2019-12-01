@@ -10,7 +10,6 @@ import cpen221.mp3.cache.Cacheable;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.Revision;
 
-//TODO
 /**
  * Representation Invariant:
  *  requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
@@ -52,6 +51,7 @@ public class WikiMediator {
      * Updates the last accessed time to the current time.
      *
      * @param id denoting the object in the cache that is being accessed
+     * @mutates timesAccessed, lastAccessed
      */
     private void updateAccess(String id){
 
@@ -71,6 +71,8 @@ public class WikiMediator {
     /**
      * Helper method used in all basic requests to keep track of all requests made to the cache.
      * Adds an Instant to requestTimes at the current time.
+     *
+     * @mutates this.requestTimes
      */
     private void addRequest(){
         requestTimes.add(Instant.now());
@@ -85,6 +87,7 @@ public class WikiMediator {
      * @param query is the String to be entered into the wikipedia search algorithm
      * @param limit the amount of pages to return
      * @return a list of Strings representing the relevant pages in non-ascending order
+     * @mutates this.timesAccessed, this.lastAccessed, this.requestTimes
      */
     public List<String> simpleSearch(String query, int limit){
 
@@ -106,6 +109,7 @@ public class WikiMediator {
      *
      * @return a String of the desired page text.  If there is no page of the specified
      *         pageTitle returns an empty String
+     * @mutates this.timesAccessed, this.lastAccessed, this.cache, this.requestTimes
      */
     public String getPage(String pageTitle) {
 
@@ -135,6 +139,7 @@ public class WikiMediator {
      * @return a List of Strings of pages that can be accessed through
      *         a given amount of hops.  If the given pageTitle is not a valid wikipedia page
      *         on en.wikipedia.org an empty list is returned.
+     * @mutates this.requestTimes
      */
     public List<String> getConnectedPages(String pageTitle, int hops){
 
@@ -177,7 +182,7 @@ public class WikiMediator {
      * @return a List of Strings sorted by the amount of times the String has been
      *         used in simpleSearch and getPage requests.  The list is sorted in
      *         non-increasing order of count.
-     *
+     * @mutates this.requestTimes
      */
     public List<String> zeitgeist(int limit){
 
@@ -205,6 +210,7 @@ public class WikiMediator {
      * @return a List of Strings sorted by the amount of times the String has been
      *         used in simpleSearch and getPage requests.  The list is sorted in
      *         non-increasing order of count.
+     * @mutates this.requestTimes
      */
     public List<String> trending(int limit){
 
@@ -235,6 +241,7 @@ public class WikiMediator {
      *
      * @return an int of the highest amount of basic requests to occur in any
      *         30 second period.
+     * @mutates this.requestTimes
      */
     public int peakLoad30s(){
 
@@ -260,10 +267,25 @@ public class WikiMediator {
         return max;
     }
 
+    /**
+     * Gets a path from startPage to stopPage, if one exists.
+     * @param startPage, the id of the page to start at
+     * @param stopPage, the id of the page to end at.
+     * @return a list of page ids starting with startPage, and ending with stopPage.
+     *          Each page is connected to the following page in the path. If startPage/stopPage
+     *          is not a valid page, or no path exists, then return an empty list.
+     *
+     */
     List<String> getPath(String startPage, String stopPage){
         return null;
     }
 
+    /**
+     * Executes a detailed search given a query containing conditions of the search
+     * @param query, the string to specify which pages to return
+     * @return a list of page ids that correspond to the search query. If the query
+     * does not follow the proper grammar, return an empty List.
+     */
     List<String> executeQuery(String query){
         return null;
     }

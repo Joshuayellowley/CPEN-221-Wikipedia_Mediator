@@ -171,8 +171,9 @@ public class Cache<T extends Cacheable> {
     }
 
     /**
-     * Updates an item in the cache.  This does not influence the staleness
-     * or last time the item was accessed.
+     * Updates an item in the cache.
+     * This method replaces an old object with a new object with the same id.
+     * Updates the timeout value, marking it as "not stale."
      *
      * @param t the object to update
      * @return true if successful and the object has been modified and false otherwise
