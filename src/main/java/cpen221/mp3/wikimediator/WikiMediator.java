@@ -14,27 +14,27 @@ import fastily.jwiki.dwrap.Revision;
 /**
  * Representation Invariant:
  *  requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
+ *  For all Instants i in requestTimes, i < Instant.now()
+ *  For all values i in lastAccessed, i < Instant.now()
+ *  For all ints i in timesAccessed, i > 0
  *  lastAccessed.size() == timesAccessed.size()
  *  lastAccessed.contains(String s) == timesAccessed.contains(String s)
- *  wiki is the Wiki used to fetch pages from en.wikipedia.org
+ *  wiki has the domain en.wikipedia.org
+ *  cache has a capacity of 256 and a timeout of 12*60*60 seconds
  *
  * Abstraction Function:
- *  Represents a Wiki that allows for more functionality
+ *  Represents a Wiki that allows for more functionality of
+ *  searching the en.wikipedia.org search directory and accessing page text
+ *  and information of recent searches.
+ *  requestTimes.size() = the total number of requests on any instance of WikiMediator
+ *  Instant within requestTimes is the time of a basic page request and is not null
+ *  lastAccessed maps a String representing a wikipedia page title to the last time it was accessed
+ *  timesAccessed maps a String representing a wikipedia page title to the amount of times it has been accessed
+ *  wiki provides access to en.wikipedia.org and access to the search function and page text and page links on
+ *  wikipedia.org
+ *
  */
 public class WikiMediator {
-
-    /* TODO: Implement this datatype
-    // TODO: ALL METHODS R PUBLIC
-
-        You must implement the methods with the exact signatures
-        as provided in the statement for this mini-project.
-
-        You must add method signatures even for the methods that you
-        do not plan to implement. You should provide skeleton implementation
-        for those methods, and the skeleton implementation could return
-        values like null.
-
-     */
 
     private static List<Instant> requestTimes = new ArrayList<>();
     private static HashMap<String,Instant> lastAccessed = new HashMap<>();
@@ -93,6 +93,8 @@ public class WikiMediator {
         return wiki.search(query, limit);
 
     }
+
+
 
 
     /**
@@ -256,6 +258,14 @@ public class WikiMediator {
         }
 
         return max;
+    }
+
+    List<String> getPath(String startPage, String stopPage){
+        return null;
+    }
+
+    List<String> executeQuery(String query){
+        return null;
     }
 
 }
