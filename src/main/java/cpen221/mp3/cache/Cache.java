@@ -52,8 +52,11 @@ public class Cache<T extends Cacheable> {
      * Objects in the cache that have not been refreshed within the timeout period
      * are removed from the cache upon next update/use.
      *
-     * @param capacity the number of objects the cache can hold
-     * @param timeout the duration, in seconds, an object should be in the cache before it times out
+     * @param capacity the number of objects the cache can hold,
+     *                 if non-positive, gets DSIZE
+     * @param timeout the duration, in seconds, an object should
+     *                be in the cache before it times out.
+     *                If non-positive, gets DTIMEOUT
      */
     public Cache(int capacity, int timeout) {
         this.capacity = DSIZE;
