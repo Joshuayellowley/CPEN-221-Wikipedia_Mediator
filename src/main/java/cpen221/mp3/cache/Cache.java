@@ -77,11 +77,12 @@ public class Cache<T extends Cacheable> {
     /**
      * Add a value to the cache.
      * If the cache is full then remove the least recently accessed object to
-     * make room for the new object.  If the id of the instance T is an id already contained
-     * by the Cache, return false.
+     * make room for the new object.  If the id of t is an id already contained
+     * by the Cache, or t is null return false.
      *
      * @param t of type T which extends Cacheable
      * @return true if the object was successfully added to the Cache and false otherwise
+     * @mutates this.storage
      */
     public boolean put(T t) {
 
@@ -123,7 +124,7 @@ public class Cache<T extends Cacheable> {
     /**
      * Finds the given object T, within the cache with the given id.
      *
-     * @throws NoSuchElementException //TODO fix this
+     * @throws NoSuchElementException if no object is found
      * @param id the identifier of the object to be retrieved
      * @return the object that matches the identifier from the cache, if no object
      * is found throws a NoSuchElementException
@@ -151,7 +152,7 @@ public class Cache<T extends Cacheable> {
      * @param id the identifier of the object to "touch"
      * @return true if the id is contained in the cache and the last accessed time is changed.
      *         If the id is not contained in the cache returns false
-     *
+     * @mutates this.storage
      */
     public boolean touch(String id) {
 
@@ -173,6 +174,7 @@ public class Cache<T extends Cacheable> {
      *
      * @param t the object to update
      * @return true if successful and the object has been modified and false otherwise
+     * @mutates this.storage
      */
     public boolean update(T t) {
 
@@ -180,8 +182,7 @@ public class Cache<T extends Cacheable> {
 
         for(T v : storage.keySet()){
             if(t.id().equals(v.id())){
-                storage.remove(v);
-                storage.replace(t,Instant.now());
+                this.storage.replace(t,Instant.now());
                 return true;
             }
         }
