@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.Duration;
 import java.util.*;
 
+import java.util.NoSuchElementException;
+
 /**
  * Representation Invariant:
  *  capacity > 0
@@ -124,7 +126,7 @@ public class Cache<T extends Cacheable> {
     /**
      * Finds the given object T, within the cache with the given id.
      *
-     * @throws NoSuchElementException if no object is found
+     * @throws NoSuchElementException If no object with the given id is found in the cache
      * @param id the identifier of the object to be retrieved
      * @return the object that matches the identifier from the cache, if no object
      * is found throws a NoSuchElementException
@@ -176,6 +178,7 @@ public class Cache<T extends Cacheable> {
      * @return true if successful and the object has been modified and false otherwise
      * @mutates this.storage
      */
+
     public boolean update(T t) {
 
         clearOldEntries();
@@ -188,7 +191,6 @@ public class Cache<T extends Cacheable> {
         }
         return false;
     }
-
 
     /**
      * Clears entry that have been in the cache for a time period longer than
