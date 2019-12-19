@@ -276,7 +276,7 @@ public class WikiMediator {
      *          is not a valid page, or no path exists, then return an empty list.
      *
      */
-    List<String> getPath(String startPage, String stopPage){
+    public List<String> getPath(String startPage, String stopPage){
         return null;
     }
 
@@ -286,7 +286,7 @@ public class WikiMediator {
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, return an empty List.
      */
-    List<String> executeQuery(String query){
+    public List<String> executeQuery(String query){
         return null;
     }
 
