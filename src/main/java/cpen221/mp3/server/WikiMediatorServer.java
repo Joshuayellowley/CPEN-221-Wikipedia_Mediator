@@ -183,6 +183,7 @@ public class WikiMediatorServer {
         JsonObject finished = new JsonObject();
 
         finished.add("id",id);
+        Object response;
         //TODO: this is broken rn but we can fix in a bit
         if(function.equals("simpleSearch")){
 
@@ -209,6 +210,7 @@ public class WikiMediatorServer {
         else if(function.equals("executeQuery")){
             response = mediator.executeQuery(query);
         }
+        return null;
     }
 
 }
