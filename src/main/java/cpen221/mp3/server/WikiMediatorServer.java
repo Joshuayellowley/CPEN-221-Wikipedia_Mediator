@@ -3,6 +3,9 @@ package cpen221.mp3.server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.IllegalFormatException;
+import java.util.List;
+
 import com.google.gson.*;
 import cpen221.mp3.wikimediator.WikiMediator;
 
@@ -111,18 +114,9 @@ public class WikiMediatorServer {
             StringBuilder jsonString = new StringBuilder();
             for (String line = in.readLine(); line != null; line = in
                     .readLine()) {
-                System.err.println("request: " + line);
                 jsonString.append(line);
             }
-
-//            JsonParser parser = new JsonParser();
-//            JsonObject json = (JsonObject) parser.parse(jsonString.toString());
-//
-//            JsonElement id = json.get("id");
-//            JsonElement type = json.get("type");
-
-            mediate(jsonString);
-
+                mediate(jsonString);
 
         } finally {
             out.close();
@@ -189,8 +183,6 @@ public class WikiMediatorServer {
         JsonObject finished = new JsonObject();
 
         finished.add("id",id);
-        //TODO: i didnt like the error
-        Object response;
         //TODO: this is broken rn but we can fix in a bit
         if(function.equals("simpleSearch")){
 
@@ -217,9 +209,6 @@ public class WikiMediatorServer {
         else if(function.equals("executeQuery")){
             response = mediator.executeQuery(query);
         }
-
-        return null;
     }
-
 
 }
