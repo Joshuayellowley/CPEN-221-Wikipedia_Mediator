@@ -100,7 +100,16 @@ public class Tests {
 
     }
 
+    @Test
+    public void testBasicGetPage(){
 
+        String s1 = "Canada";
+        String s2 = "Mexico";
+        WikiMediator w = new WikiMediator();
+
+        assertEquals(w.getPath(s1,s2), new ArrayList<>());
+
+    }
 
 
 }

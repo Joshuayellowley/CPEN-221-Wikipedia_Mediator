@@ -4,11 +4,20 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 import cpen221.mp3.cache.Cache;
 import cpen221.mp3.wikimediator.WikiPage;
 import cpen221.mp3.cache.Cacheable;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.Revision;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
 
 /**
  * Representation Invariant:
@@ -152,6 +161,7 @@ public class WikiMediator {
         }
 
         List<String> allPages = wiki.getLinksOnPage(pageTitle);
+        allPages.add(pageTitle);
 
         int count = 1;
 
@@ -276,9 +286,51 @@ public class WikiMediator {
      *          is not a valid page, or no path exists, then return an empty list.
      *
      */
-    List<String> getPath(String startPage, String stopPage){
-        return null;
+    public List<String> getPath(String startPage, String stopPage){
+
+        Instant begin = Instant.now();
+        boolean foundIt = false;
+        if(startPage.equals(stopPage)){
+            List<String> single = new ArrayList<>();
+            single.add(startPage);
+            return single;
+        }
+
+        List<String> startList = wiki.getLinksOnPage(startPage);
+        List<String> stopList = wiki.getLinksOnPage(stopPage);
+        List<String> result = new ArrayList<>();
+        result.add(startPage);
+
+        for(String s: startList){
+
+            if(checkForPage(s,stopPage)){
+                result.add(s);
+                result.add(stopPage);
+                return result;
+            };
+
+
+
+
+            if(Duration.between(begin,Instant.now()).toSeconds() >= 290){
+                return new ArrayList<>();
+            }
+        }
+
+        return new ArrayList<>();
     }
+
+    boolean checkForPage(String p1, String p2){
+
+        return wiki.getLinksOnPage(p1).contains(p2);
+    }
+
+//    List<String> getPathRecursive(String startPage,String stopPage, List<String> currentPages, boolean foundIt){
+//
+//
+//
+//        return null;
+//    }
 
     /**
      * Executes a detailed search given a query containing conditions of the search
@@ -286,8 +338,18 @@ public class WikiMediator {
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, return an empty List.
      */
-    List<String> executeQuery(String query){
+    public List<String> executeQuery(String query){
+
+        CharStream stream = new ANTLRInputStream(query);
+        WikiQueryLexer lexer = new WikiQueryLexer(stream);
+
+
         return null;
     }
 
+
+
+
 }
+
+
