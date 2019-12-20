@@ -31,10 +31,10 @@ package cpen221.mp3.wikimediator;
  *  antlr requires tokens to be CAPITALIZED, like START_ITALIC, and TEXT.
  */
 
-CONDITION : LPAREN CONDITION 'and' CONDITION RPAREN | LPAREN CONDITION 'or' CONDITION RPAREN | SIMPLE_CONDITION;
+CONDITION : SIMPLE_CONDITION | LPAREN CONDITION ' and ' CONDITION RPAREN | LPAREN CONDITION ' or ' CONDITION RPAREN;
 LPAREN : '(';
 RPAREN : ')';
-SIMPLE_CONDITION : 'title is'  STRING | 'author is'  STRING | 'category is'  STRING;
+SIMPLE_CONDITION : 'title is '  STRING | 'author is ' STRING | 'category is ' STRING;
 ITEM : 'page' | 'author' | 'category';
 SORTED : 'asc' | 'desc';
 STRING : '\'' ( ~'\'' | '\'\'' )* '\'';

@@ -111,5 +111,25 @@ public class Tests {
 
     }
 
+    @Test
+    public void testExecuteQuery1(){
+
+        String query = "get page where title is 'Canada'";
+        WikiMediator w = new WikiMediator();
+
+        assertEquals(w.executeQuery(query), null);
+
+    }
+
+    @Test
+    public void testExecuteQuery2(){
+
+        String query = "get page where (title is 'nintendo' or author is 'baby')";
+        WikiMediator w = new WikiMediator();
+
+        assertEquals(w.executeQuery(query), null);
+
+    }
+
 
 }
