@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -117,7 +118,10 @@ public class Tests {
         String query = "get page where title is 'Canada'";
         WikiMediator w = new WikiMediator();
 
-        assertEquals(w.executeQuery(query), null);
+        List<String> expected = new ArrayList<>();
+        expected.add("Canada");
+
+        assertEquals(expected, w.executeQuery(query));
 
     }
 
@@ -125,6 +129,40 @@ public class Tests {
     public void testExecuteQuery2(){
 
         String query = "get page where (title is 'nintendo' or author is 'baby')";
+        WikiMediator w = new WikiMediator();
+
+        List<String> expected = (w.executeQuery(query));
+
+        for(String s : expected){
+            System.out.println(s);
+        }
+
+    }
+
+    @Test
+    public void testExecuteQuery3(){
+
+        String query = "get page where category is 'Illinois state senators'";
+        WikiMediator w = new WikiMediator();
+
+        assertEquals(w.executeQuery(query), null);
+
+    }
+
+    @Test
+    public void testExecuteQuery4(){
+
+        String query = "get category where (author is 'CLCStudent' and (title is 'Barack Obama' or title is 'Naomi Klein'))";
+        WikiMediator w = new WikiMediator();
+
+        assertEquals(w.executeQuery(query), null);
+
+    }
+
+    @Test
+    public void testExecuteQuery5(){
+
+        String query = "get page where ((author is 'AndrewOne' and author is 'Sylas') or (title is 'Barack Obama' or category is 'Games'))";
         WikiMediator w = new WikiMediator();
 
         assertEquals(w.executeQuery(query), null);

@@ -16,6 +16,8 @@ import fastily.jwiki.dwrap.Revision;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 
+import javax.management.Query;
+
 /**
  * Representation Invariant:
  *  requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
@@ -296,6 +298,7 @@ public class WikiMediator {
         List<String> startList = wiki.getLinksOnPage(startPage);
         List<String> stopList = wiki.getLinksOnPage(stopPage);
         List<String> result = new ArrayList<>();
+
         result.add(startPage);
 
         for(String s: startList){
@@ -304,9 +307,7 @@ public class WikiMediator {
                 result.add(s);
                 result.add(stopPage);
                 return result;
-            };
-
-
+            }
 
 
             if(Duration.between(begin,Instant.now()).toSeconds() >= 290){
@@ -318,16 +319,8 @@ public class WikiMediator {
     }
 
     boolean checkForPage(String p1, String p2){
-
         return wiki.getLinksOnPage(p1).contains(p2);
     }
-
-//    List<String> getPathRecursive(String startPage,String stopPage, List<String> currentPages, boolean foundIt){
-//
-//
-//
-//        return null;
-//    }
 
     /**
      * Executes a detailed search given a query containing conditions of the search
@@ -363,37 +356,127 @@ public class WikiMediator {
         WikiQueryBaseListener listener = new WikiQueryBaseListener();
         walker.walk(listener, tree);
 
+        Token type = tokens.get(1);
         Token condition = tokens.get(3);
-        String cond = condition.getText();
+        String t = type.getText();
 
 
-        System.out.println(cond);
         String returnType = "";
 
-        if(cond.charAt(5) == 'p') {
+        if(t.charAt(0) == 'p') {
             returnType = "page";
         }
 
-        if(cond.charAt(5) == 'c'){
+        if(t.charAt(0) == 'c'){
             returnType = "category";
         }
 
-        if(cond.charAt(5) == 'a'){
+        if(t.charAt(0) == 'a'){
             returnType = "author";
         }
 
-        List<String> conds = new ArrayList<>();
+         QueryCondition eval = new QueryCondition(condition.getText());
 
-        setConditions(cond, conds);
-
-        return null;
+        return evaluateConditions(returnType, eval);
     }
 
-    List<String> setConditions(String cond, List<String> allConditions){
+    private List<String> evaluateConditions(String returnType, QueryCondition eval){
+
+        List<String> result = new ArrayList<>();
+
+        if(returnType.equals("page")){
+            result = evalForPage(eval);
+        }
+
+        if(returnType.equals("author")){
+            result = evalForAuthor(eval);
+        }
+
+        if(returnType.equals("category")){
+            result = evalForCategory(eval);
+        }
+
+
+        return result;
+    }
+
+    private List<String> evalForPage(QueryCondition eval){
+        List<String> result = new ArrayList<>();
+
+        if(!eval.compound){
+            String search = "";
+            for(String s : eval.first.keySet()){
+                search = s;
+            }
+
+            if(search.equals("category")){
+                String temp = eval.first.get(search);
+                result = wiki.getCategoryMembers(temp);
+            }
+
+            if(search.equals("title")){
+                String temp = eval.first.get(search);
+                if(wiki.exists(temp)) {
+                    result.add(temp);
+                }
+            }
+        }else if(eval.left == null && eval.right == null){
 
 
 
-        return allConditions;
+        }
+
+        return result;
+    }
+
+    private List<String> evalForAuthor(QueryCondition eval){
+        List<String> result = new ArrayList<>();
+
+        if(!eval.compound){
+            String search = "";
+            for(String s : eval.first.keySet()){
+                search = s;
+            }
+
+            if(search.equals("category")){
+                String temp = eval.first.get(search);
+                result = wiki.getCategoryMembers(temp);
+            }
+
+            if(search.equals("title")){
+                String temp = eval.first.get(search);
+                if(wiki.exists(temp)) {
+                    result.add(temp);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<String> evalForCategory(QueryCondition eval){
+        List<String> result = new ArrayList<>();
+
+        if(!eval.compound){
+            String search = "";
+            for(String s : eval.first.keySet()){
+                search = s;
+            }
+
+            if(search.equals("category")){
+                String temp = eval.first.get(search);
+                result = wiki.getCategoryMembers(temp);
+            }
+
+            if(search.equals("title")){
+                String temp = eval.first.get(search);
+                if(wiki.exists(temp)) {
+                    result.add(temp);
+                }
+            }
+        }
+
+        return result;
     }
 }
 
