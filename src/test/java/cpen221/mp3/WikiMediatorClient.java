@@ -80,12 +80,13 @@ public class WikiMediatorClient {
     public static void main(String[] args) {
         try {
                 WikiMediatorClient client = new WikiMediatorClient("localhost", WikiMediatorServer.WIKI_PORT);
-                String test = "{\n" +
-                        "\tid: \"1\",\n" +
-                        "\ttype: \"simpleSearch\",\n" +
-                        "\tquery: \"Barack Obama\",\n" +
-                        "\tlimit: \"100\"\n" +
-                        "}";
+            String test = "{\n" +
+                    "\tid: \"1\",\n" +
+                    "\ttype: \"simpleSearch\",\n" +
+                    "\tquery: \"A\",\n" +
+                    "\tlimit: \"10\",\n" +
+                    "\ttimeout: \"1\"" +
+                    "}";
 
                 String test2 = "{\n" +
                         "\tid: \"3\",\n" +
@@ -94,6 +95,12 @@ public class WikiMediatorClient {
                         "\thops: \"2\",\n" +
                         "\ttimeout: \"60000000\"\n" +
                         "}";
+            String test3 = "{\n" +
+                    "\tid: \"3\",\n" +
+                    "\ttype: \"executeQuery\",\n" +
+                    "\tquery: \"get page where category is \'Barack Obama\'\",\n" +
+                    "\ttimeout: \"60000000\"\n" +
+                    "}";
                 client.sendRequest(test);
                 String reply = client.getReply();
                 System.out.println(reply);
