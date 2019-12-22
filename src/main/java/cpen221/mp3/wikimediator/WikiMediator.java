@@ -329,7 +329,7 @@ public class WikiMediator {
         return new ArrayList<>();
     }
 
-    boolean checkForPage(String p1, String p2){
+    private boolean checkForPage(String p1, String p2){
         return wiki.getLinksOnPage(p1).contains(p2);
     }
 
