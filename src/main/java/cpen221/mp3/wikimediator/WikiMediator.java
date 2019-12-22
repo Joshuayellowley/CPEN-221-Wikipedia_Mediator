@@ -4,11 +4,19 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 import cpen221.mp3.cache.Cache;
 import cpen221.mp3.wikimediator.WikiPage;
 import cpen221.mp3.cache.Cacheable;
 import fastily.jwiki.core.Wiki;
 import fastily.jwiki.dwrap.Revision;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStream;
+
+import javax.management.Query;
 
 /**
  * Representation Invariant:
@@ -145,6 +153,10 @@ public class WikiMediator {
 
         addRequest();
 
+        if(!wiki.exists(pageTitle)){
+            return new ArrayList<>();
+        }
+
         if(hops == 0){
             List<String> single = new ArrayList<>();
             single.add(pageTitle);
@@ -152,6 +164,7 @@ public class WikiMediator {
         }
 
         List<String> allPages = wiki.getLinksOnPage(pageTitle);
+        allPages.add(pageTitle);
 
         int count = 1;
 
@@ -274,10 +287,42 @@ public class WikiMediator {
      * @return a list of page ids starting with startPage, and ending with stopPage.
      *          Each page is connected to the following page in the path. If startPage/stopPage
      *          is not a valid page, or no path exists, then return an empty list.
-     *
      */
     public List<String> getPath(String startPage, String stopPage){
-        return null;
+
+        Instant begin = Instant.now();
+        boolean foundIt = false;
+        if(startPage.equals(stopPage)){
+            List<String> single = new ArrayList<>();
+            single.add(startPage);
+            return single;
+        }
+
+        List<String> startList = wiki.getLinksOnPage(startPage);
+        List<String> stopList = wiki.getLinksOnPage(stopPage);
+        List<String> result = new ArrayList<>();
+
+        result.add(startPage);
+
+        for(String s: startList){
+
+            if(checkForPage(s,stopPage)){
+                result.add(s);
+                result.add(stopPage);
+                return result;
+            }
+
+
+            if(Duration.between(begin,Instant.now()).toSeconds() >= 290){
+                return new ArrayList<>();
+            }
+        }
+
+        return new ArrayList<>();
+    }
+
+    boolean checkForPage(String p1, String p2){
+        return wiki.getLinksOnPage(p1).contains(p2);
     }
 
     /**
@@ -286,8 +331,375 @@ public class WikiMediator {
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, return an empty List.
      */
-    public List<String> executeQuery(String query){
-        return null;
+    public List<String> executeQuery(String query) throws InvalidQueryException{
+
+        CharStream stream = new ANTLRInputStream(query);
+        WikiQueryLexer lexer = new WikiQueryLexer(stream);
+        lexer.reportErrorsAsExceptions();
+        TokenStream tokens = new CommonTokenStream(lexer);
+
+        // Feed the tokens into the parser.
+        WikiQueryParser parser = new WikiQueryParser(tokens);
+        parser.reportErrorsAsExceptions();
+
+        // Generate the parse tree using the starter rule.
+        try {
+            ParseTree tree = parser.wikiquery(); // "root" is the starter rule.
+        // debugging option #1: print the tree to the console
+        System.err.println(tree.toStringTree(parser));
+
+        // debugging option #2: show the tree in a window
+        // ((RuleContext)tree).inspect(parser);
+
+        // debugging option #3: walk the tree with a listener
+        //new ParseTreeWalker().walk(new WikiQueryBaseListener(), tree);
+
+        // Finally, construct a Poly value by walking over the parse tree.
+        ParseTreeWalker walker = new ParseTreeWalker();
+        WikiQueryBaseListener listener = new WikiQueryBaseListener();
+        walker.walk(listener, tree);
+
+        Token type = tokens.get(1);
+        Token condition = tokens.get(3);
+        String t = type.getText();
+
+
+        String returnType = "";
+
+        if(t.charAt(0) == 'p') {
+            returnType = "page";
+        }
+
+        if(t.charAt(0) == 'c'){
+            returnType = "category";
+        }
+
+        if(t.charAt(0) == 'a'){
+            returnType = "author";
+        }
+
+        QueryCondition eval = new QueryCondition(condition.getText());
+        return evaluateConditions(returnType, eval);
+
+        }catch (Exception e){
+            throw new InvalidQueryException();
+        }
     }
 
+    private List<String> evaluateConditions(String returnType, QueryCondition eval){
+
+        List<String> result = new ArrayList<>();
+
+        if(returnType.equals("page")){
+            result = evalForPage(eval);
+        }
+
+        if(returnType.equals("author")){
+            result = evalForAuthor(eval);
+        }
+
+        if(returnType.equals("category")){
+            result = evalForCategory(eval);
+        }
+
+        return result;
+    }
+
+    private List<String> evalForPage(QueryCondition eval){
+        List<String> result = new ArrayList<>();
+        List<String> fromLeft = new ArrayList<>();
+        List<String> fromRight = new ArrayList<>();
+
+        String search = "";
+        if(!eval.compound){
+
+            for(String s : eval.first.keySet()){
+                search = s;
+            }
+
+            if(search.equals("category")){
+                String temp = eval.first.get(search);
+                result = wiki.getCategoryMembers(temp);
+            }
+
+            if(search.equals("title")){
+                String temp = eval.first.get(search);
+                if(wiki.exists(temp)) {
+                    result.add(temp);
+                }
+            }
+
+            if(search.equals("author")){
+                String temp = eval.first.get(search);
+                result.addAll(wiki.getUserUploads(temp));
+            }
+
+        }else{
+            if(eval.left == null){
+                for(String s : eval.first.keySet()){
+                    search = s;
+                }
+                String temp = eval.first.get(search);
+
+                if(search.equals("category")){
+                    fromLeft = wiki.getCategoryMembers(temp);
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromLeft.add(temp);
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromLeft.addAll(wiki.getUserUploads(temp));
+                }
+            }else{
+                fromLeft = evalForPage(eval.left);
+            }
+
+            if(eval.right == null){
+                for(String s : eval.second.keySet()){
+                    search = s;
+                }
+                String temp = eval.second.get(search);
+
+                if(search.equals("category")){
+                    fromRight = wiki.getCategoryMembers(temp);
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromRight.add(temp);
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromRight.addAll(wiki.getUserUploads(temp));
+                }
+            }else{
+                fromRight = evalForPage(eval.right);
+            }
+
+            if(eval.type.equals("or")){
+                result.addAll(fromLeft);
+                result.addAll(fromRight);
+            }
+
+            if(eval.type.equals("and")){
+                for(String s : fromLeft){
+                    if(fromRight.contains(s)){
+                        result.add(s);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<String> evalForAuthor(QueryCondition eval){
+        List<String> result = new ArrayList<>();
+        List<String> fromLeft = new ArrayList<>();
+        List<String> fromRight = new ArrayList<>();
+        String search = "";
+
+        if(!eval.compound){
+
+            for(String s : eval.first.keySet()){
+                search = s;
+            }
+
+            if(search.equals("category")){
+                String temp = eval.first.get(search);
+                List<String> authorList = wiki.getCategoryMembers(temp);
+                for(String s : authorList){
+                    result.add(wiki.getLastEditor(s));
+                }
+            }
+
+            if(search.equals("title")){
+                String temp = eval.first.get(search);
+                if(wiki.exists(temp)) {
+                    result.add(wiki.getLastEditor(temp));
+                }
+            }
+
+            if(search.equals("author")){
+                result.add(eval.first.get(search));
+            }
+
+        }else{
+            if(eval.left == null){
+                for(String s : eval.first.keySet()){
+                    search = s;
+                }
+                String temp = eval.first.get(search);
+
+                if(search.equals("category")){
+                    List<String> authorList = wiki.getCategoryMembers(temp);
+                    for(String s : authorList){
+                        fromLeft.add(wiki.getLastEditor(s));
+                    }
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromLeft.add(wiki.getLastEditor(temp));
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromLeft.add(temp);
+                }
+            }else{
+                fromLeft = evalForAuthor(eval.left);
+            }
+
+            if(eval.right == null){
+                for(String s : eval.second.keySet()){
+                    search = s;
+                }
+                String temp = eval.second.get(search);
+
+                if(search.equals("category")){
+                    List<String> authorList = wiki.getCategoryMembers(temp);
+                    for(String s : authorList){
+                        fromRight.add(wiki.getLastEditor(s));
+                    }
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromRight.add(wiki.getLastEditor(temp));
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromRight.add(temp);
+                }
+            }else{
+                fromRight = evalForAuthor(eval.right);
+            }
+
+            if(eval.type.equals("or")){
+                result.addAll(fromLeft);
+                result.addAll(fromRight);
+            }
+
+            if(eval.type.equals("and")){
+                for(String s : fromLeft){
+                    if(fromRight.contains(s)){
+                        result.add(s);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<String> evalForCategory(QueryCondition eval){
+        List<String> result = new ArrayList<>();
+        List<String> fromLeft = new ArrayList<>();
+        List<String> fromRight = new ArrayList<>();
+        String search = "";
+
+        if(!eval.compound){
+            for(String s : eval.first.keySet()){
+                search = s;
+            }
+
+            if(search.equals("category")){
+                String temp = eval.first.get(search);
+                result.add(temp);
+            }
+
+            if(search.equals("title")){
+                String temp = eval.first.get(search);
+                if(wiki.exists(temp)) {
+                    result.addAll(wiki.getCategoriesOnPage(temp));
+                }
+            }
+
+            if(search.equals("author")){
+                String temp = eval.first.get(search);
+                List<String> pageList = (wiki.getUserUploads(temp));
+                for(String s : pageList){
+                    result.addAll(wiki.getCategoriesOnPage(s));
+                }
+
+            }
+
+        }else {
+            if (eval.left == null) {
+                for (String s : eval.first.keySet()) {
+                    search = s;
+                }
+                String temp = eval.first.get(search);
+
+                if (search.equals("category")) {
+                    fromLeft.add(temp);
+                }
+
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
+                        fromLeft.addAll(wiki.getCategoriesOnPage(temp));
+                    }
+                }
+
+                if (search.equals("author")) {
+                    List<String> authorList = (wiki.getUserUploads(temp));
+                    for (String s : authorList) {
+                        fromLeft.addAll(wiki.getCategoriesOnPage(s));
+                    }
+                }
+            } else {
+                fromLeft = evalForCategory(eval.left);
+            }
+
+            if (eval.right == null) {
+                for (String s : eval.second.keySet()) {
+                    search = s;
+                }
+                String temp = eval.second.get(search);
+
+                if (search.equals("category")) {
+                    fromRight.add(temp);
+                }
+
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
+                        fromRight.addAll(wiki.getCategoriesOnPage(temp));
+                    }
+                }
+
+                if (search.equals("author")) {
+                    List<String> authorList = (wiki.getUserUploads(temp));
+                    for (String s : authorList) {
+                        fromRight.addAll(wiki.getCategoriesOnPage(s));
+                    }
+                }
+                } else {
+                    fromRight = evalForCategory(eval.right);
+                }
+
+                if (eval.type.equals("or")) {
+                    result.addAll(fromLeft);
+                    result.addAll(fromRight);
+                }
+
+                if (eval.type.equals("and")) {
+                    for (String s : fromLeft) {
+                        if (fromRight.contains(s)) {
+                            result.add(s);
+                        }
+                    }
+                }
+            }
+
+        return result;
+    }
 }
+
+

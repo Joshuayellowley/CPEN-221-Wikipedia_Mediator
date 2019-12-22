@@ -109,18 +109,34 @@ public class Cache<T extends Cacheable> {
 
             long min = 0;
             T toRemove = null;
-            for(T q : lastTimeOpened.keySet()){
-                Instant i = lastTimeOpened.get(q);
-                long timeElapsed = Duration.between(i, Instant.now()).toSeconds();
-                if(timeElapsed > min){
-                    min = timeElapsed;
-                    toRemove = q;
+            if(lastTimeOpened.size() != 0) {
+                for (T q : lastTimeOpened.keySet()) {
+                    Instant i = lastTimeOpened.get(q);
+                    long timeElapsed = Duration.between(i, Instant.now()).toSeconds();
+                    if (timeElapsed > min) {
+                        min = timeElapsed;
+                        toRemove = q;
+                    }
                 }
+                storage.remove(toRemove);
+                lastTimeOpened.remove(toRemove);
+                storage.put(t, Instant.now());
+                lastTimeOpened.put(t, Instant.now());
+
+            }else{
+                for (T q : storage.keySet()) {
+                    Instant i = storage.get(q);
+                    long timeElapsed = Duration.between(i, Instant.now()).toSeconds();
+                    if (timeElapsed > min) {
+                        min = timeElapsed;
+                        toRemove = q;
+                    }
+                }
+                storage.remove(toRemove);
+                lastTimeOpened.remove(toRemove);
+                storage.put(t, Instant.now());
+                lastTimeOpened.put(t, Instant.now());
             }
-            storage.remove(toRemove);
-            lastTimeOpened.remove(toRemove);
-            storage.put(t,Instant.now());
-            lastTimeOpened.put(t,Instant.now());
 
         }
         return true;
@@ -162,6 +178,10 @@ public class Cache<T extends Cacheable> {
     public boolean touch(String id) {
 
         clearOldEntries();
+
+        if(id == null){
+            return false;
+        }
 
         for(T t : storage.keySet()){
             if(t.id().equals(id)){

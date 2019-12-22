@@ -9,7 +9,13 @@ import java.util.concurrent.*;
 
 import com.google.gson.*;
 import com.google.gson.stream.JsonWriter;
+import cpen221.mp3.wikimediator.InvalidQueryException;
 import cpen221.mp3.wikimediator.WikiMediator;
+
+import java.util.IllegalFormatException;
+import java.util.List;
+
+
 
 /**
  * Representation Invariant:
