@@ -2,8 +2,10 @@ package cpen221.mp3.cache;
 
 import java.time.Instant;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -113,8 +115,8 @@ public class Cache<T extends Cacheable> {
             if(lastTimeOpened.size() != 0) {
                 for (T q : lastTimeOpened.keySet()) {
                     Instant i = lastTimeOpened.get(q);
-                    long timeElapsed = Duration.between(i, Instant.now()).toMillis();
-                    //System.out.println(timeElapsed);
+                    long timeElapsed = Duration.between(i, Instant.now()).toNanos();
+                    System.out.println(timeElapsed);
                     if (timeElapsed > min) {
                         min = timeElapsed;
                         toRemove = q;
@@ -212,7 +214,7 @@ public class Cache<T extends Cacheable> {
 
         List<T> toRemove = new ArrayList<>();
         for(T t : storage.keySet()){
-            if(Duration.between(storage.get(t),Instant.now()).toSeconds() >= this.timeout){
+            if(Duration.between(storage.get(t),Instant.now()).toNanos()/1000000 >= this.timeout){
                 toRemove.add(t);
             }
         }

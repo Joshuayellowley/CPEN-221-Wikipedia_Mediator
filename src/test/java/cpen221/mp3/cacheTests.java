@@ -10,63 +10,62 @@ import static org.junit.Assert.*;
 
 public class cacheTests <T extends Cacheable> {
 
-    private Cache defaultCache = new Cache();
-    private Cache specificCache = new Cache(2, 20);
-    private Cache sCache = new Cache(32, 1);
-
     @Test
     public void putIntoCache(){
+        Cache cache1 = new Cache(2, 600);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
         ToCache t4 = new ToCache("4");
 
-        assertTrue(specificCache.put(t1));
-        assertTrue(specificCache.put(t2));
-        assertFalse(specificCache.put(t3));
-        assertTrue(specificCache.put(t4));
-        assertFalse(specificCache.put(t2));
-        assertFalse (specificCache.put(t4));
+        assertTrue(cache1.put(t1));
+        assertTrue(cache1.put(t2));
+        assertFalse(cache1.put(t3));
+        cache1.put(t1);
+        assertFalse(cache1.put(t2));
+        assertTrue(cache1.put(t4));
     }
 
     @Test
     public void putIntoCache2(){
+        Cache cache2 = new Cache(2, 600);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
         ToCache t4 = new ToCache("4");
 
-        assertTrue(specificCache.put(t1));
-        assertTrue(specificCache.put(t2));
-        assertFalse(specificCache.put(t3));
-        specificCache.get(t2.id());
-        specificCache.get(t1.id());
-        assertFalse(specificCache.put(t2));
-        assertTrue(specificCache.put(t4));
-        specificCache.put(t1);
+        assertTrue(cache2.put(t1));
+        assertTrue(cache2.put(t2));
+        assertFalse(cache2.put(t3));
+        cache2.get(t2.id());
+        cache2.get(t1.id());
+        assertFalse(cache2.put(t2));
+        assertTrue(cache2.put(t4));
+        cache2.put(t1);
     }
 
     @Test
     public void putIntoCache3(){
+        Cache cache3 = new Cache(2, 6000);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = new ToCache("3");
         ToCache t4 = new ToCache("4");
 
-        assertTrue(specificCache.put(t1));
-        assertTrue(specificCache.put(t2));
-        assertTrue(specificCache.put(t3));
-        assertTrue(specificCache.put(t4));
-        assertFalse(specificCache.update(t3));
-        assertTrue(specificCache.update(t4));
-        assertFalse(specificCache.update(t1));
-        assertTrue(specificCache.put(t1));
-        assertFalse(specificCache.update(t4));
-        assertTrue(specificCache.update(t1));
+        assertTrue(cache3.put(t1));
+        assertTrue(cache3.put(t2));
+        assertTrue(cache3.put(t3));
+        assertTrue(cache3.put(t4));
+        assertTrue(cache3.update(t3));
+        assertTrue(cache3.update(t4));
+        assertFalse(cache3.update(t1));
+        assertTrue(cache3.put(t1));
+        assertTrue(cache3.update(t1));
     }
 
     @Test
     public void touchInCache() {
+        Cache specificCache = new Cache(2, 600);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -78,11 +77,12 @@ public class cacheTests <T extends Cacheable> {
         assertFalse(specificCache.touch(t4.id()));
         assertFalse(specificCache.touch(null));
         assertTrue(specificCache.put(t4));
-        assertTrue(specificCache.touch(t2.id()));
+        specificCache.touch(t2.id());
     }
 
     @Test
     public void updateInCache() {
+        Cache defaultCache = new Cache();
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -97,6 +97,7 @@ public class cacheTests <T extends Cacheable> {
 
     @Test
     public void clearOldEntries() {
+        Cache sCache = new Cache(32, 1);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -123,7 +124,7 @@ public class cacheTests <T extends Cacheable> {
     }
 
 
-
+    //Cacheable ADT to be used to test Cache implementation
     private class ToCache implements Cacheable {
 
         String id;
@@ -134,4 +135,4 @@ public class cacheTests <T extends Cacheable> {
 
         public String id(){return this.id;}
     }
-    }
+}
