@@ -184,20 +184,91 @@ public class ServerTests {
                 "\tid: \"4\",\n" +
                 "\ttype: \"peakLoad30s\"\n" +
                 "}";
-        String result = request(test);
+        request(test);
         t.interrupt();
     }
 
     @Test
     public void testExecuteQuery() throws InterruptedException {
+        Thread s = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        s.start();
         String test = "{\n" +
                 "\tid: \"3\",\n" +
                 "\ttype: \"executeQuery\",\n" +
                 "\tquery: \"get page where category is \'Barack Obama\'\",\n" +
                 "\ttimeout: \"60000000\"\n" +
                 "}";
-
         request(test);
+        s.interrupt();
+    }
+
+    @Test
+    public void testExecuteQueryBadName() throws InterruptedException {
+        Thread s = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        s.start();
+        String test = "{\n" +
+                "\tid: \"3\",\n" +
+                "\ttype: \"executeQuery\",\n" +
+                "\tquery: \"get page where category ifs \'Barack Obama\'\",\n" +
+                "\ttimeout: \"60000000\"\n" +
+                "}";
+        request(test);
+        s.interrupt();
+    }
+    @Test
+    public void testExecuteQueryTimeout() throws InterruptedException {
+        Thread s = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        s.start();
+        String test = "{\n" +
+                "\tid: \"3\",\n" +
+                "\ttype: \"executeQuery\",\n" +
+                "\tquery: \"get page where category ifs \'Barack Obama\'\",\n" +
+                "\ttimeout: \"0\"\n" +
+                "}";
+        request(test);
+        s.interrupt();
+    }
+
+    @Test
+    public void testNoFunction() throws InterruptedException {
+        Thread s = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        s.start();
+        String test = "{\n" +
+                "\tid: \"3\",\n" +
+                "\ttype: \" \",\n" +
+                "\tquery: \"get page where category ifs \'Barack Obama\'\",\n" +
+                "\ttimeout: \"0\"\n" +
+                "}";
+        request(test);
+        s.interrupt();
     }
 
     @Test
@@ -250,7 +321,6 @@ public class ServerTests {
         Thread t5 = new Thread(()->request(test));
         Thread t6 = new Thread(()->request(test));
 
-        request(test);
         t.start();
         t1.start();
         t2.start();
@@ -270,7 +340,7 @@ public class ServerTests {
     }
 
     @Test
-    public void testSSTimeout(){
+    public void testSSTimeout() throws InterruptedException {
         Thread t = new Thread(()->{
             try {
                 WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
@@ -291,8 +361,9 @@ public class ServerTests {
         request(test);
         t.interrupt();
     }
+
     @Test
-    public void testBadFormat(){
+    public void testGetPageTimeout() throws InterruptedException {
         Thread t = new Thread(()->{
             try {
                 WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
@@ -304,10 +375,9 @@ public class ServerTests {
         t.start();
         String test = "{\n" +
                 "\tid: \"1\",\n" +
-                "\ttype: \"simpleSearch\",\n" +
-                "\tquery: \"A\",\n" +
-                "\tlimit: \"T\",\n" +
-                "\ttimeout: \"1\"\n" +
+                "\ttype: \"getPage\",\n" +
+                "\tpageTitle: \"A\",\n" +
+                "\ttimeout: \"0\"\n" +
                 "}";
 
         request(test);
@@ -315,7 +385,7 @@ public class ServerTests {
     }
 
     @Test
-    public void testSSInterrupt(){
+    public void testZeitgeistTimeout() throws InterruptedException {
         Thread t = new Thread(()->{
             try {
                 WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
@@ -327,28 +397,81 @@ public class ServerTests {
         t.start();
         String test = "{\n" +
                 "\tid: \"1\",\n" +
-                "\ttype: \"simpleSearch\",\n" +
-                "\tquery: \"A\",\n" +
-                "\tlimit: \"10\",\n" +
-                "\ttimeout: \"100\"\n" +
+                "\ttype: \"zeitgeist\",\n" +
+                "\tlimit: \"1\",\n" +
+                "\ttimeout: \"0\"\n" +
                 "}";
 
-
-        Thread s = new Thread(()->request(test));
-        s.start();
-        s.interrupt();
+        request(test);
         t.interrupt();
     }
 
+    @Test
+    public void testTrendingTimeout() throws InterruptedException {
+        Thread t = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        t.start();
+        String test = "{\n" +
+                "\tid: \"1\",\n" +
+                "\ttype: \"trending\",\n" +
+                "\tlimit: \"1\",\n" +
+                "\ttimeout: \"0\"\n" +
+                "}";
 
+        request(test);
+        t.interrupt();
+    }
 
+    @Test
+    public void testPL30sTimeout() throws InterruptedException {
+        Thread t = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        t.start();
+        String test = "{\n" +
+                "\tid: \"1\",\n" +
+                "\ttype: \"peakLoad30s\",\n" +
+                "\tlimit: \"1\",\n" +
+                "\ttimeout: \"0\"\n" +
+                "}";
 
+        request(test);
+        t.interrupt();
+    }
 
+    @Test
+    public void testGetPathTimeout() throws InterruptedException {
+        Thread t = new Thread(()->{
+            try {
+                WikiMediatorServer server = new WikiMediatorServer(3, WikiMediatorServer.WIKI_PORT);
+                server.serve();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        t.start();
+        String test = "{\n" +
+                "\tid: \"1\",\n" +
+                "\ttype: \"getPath\",\n" +
+                "\tstartPage: \"1\",\n" +
+                "\tstopPage: \"0\",\n" +
+                "\ttimeout: \"0\"\n" +
+                "}";
 
-
-
-
-
+        request(test);
+        t.interrupt();
+    }
 
 
 }

@@ -215,11 +215,7 @@ public class WikiMediatorServer {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", listToJsonArr(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -232,11 +228,7 @@ public class WikiMediatorServer {
                     String response = future.get(timeout, TimeUnit.SECONDS);;
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", new JsonPrimitive(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -249,11 +241,7 @@ public class WikiMediatorServer {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", listToJsonArr(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));                future.cancel(true);
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -266,11 +254,7 @@ public class WikiMediatorServer {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", listToJsonArr(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -283,11 +267,7 @@ public class WikiMediatorServer {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", listToJsonArr(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -300,11 +280,7 @@ public class WikiMediatorServer {
                     Integer response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", new JsonPrimitive(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -317,11 +293,7 @@ public class WikiMediatorServer {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", listToJsonArr(response));
-                } catch (InterruptedException | ExecutionException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -340,11 +312,7 @@ public class WikiMediatorServer {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", listToJsonArr(response));
-                } catch (InterruptedException e) {
-                    finished.add("status", new JsonPrimitive("failed"));
-                    finished.add("response", new JsonPrimitive("Unexpected Interruption"));
-                    future.cancel(true);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | TimeoutException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
@@ -362,15 +330,5 @@ public class WikiMediatorServer {
         }
         return finished;
     }
-
-    public static void main(String[] args) {
-        try {
-            WikiMediatorServer server = new WikiMediatorServer(3, WIKI_PORT);
-            server.serve();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
 }
