@@ -47,6 +47,25 @@ public class cacheTests <T extends Cacheable> {
     }
 
     @Test
+    public void putIntoCache3(){
+        ToCache t1 = new ToCache("1");
+        ToCache t2 = new ToCache("2");
+        ToCache t3 = new ToCache("3");
+        ToCache t4 = new ToCache("4");
+
+        assertTrue(specificCache.put(t1));
+        assertTrue(specificCache.put(t2));
+        assertTrue(specificCache.put(t3));
+        assertTrue(specificCache.put(t4));
+        assertFalse(specificCache.update(t3));
+        assertTrue(specificCache.update(t4));
+        assertFalse(specificCache.update(t1));
+        assertTrue(specificCache.put(t1));
+        assertFalse(specificCache.update(t4));
+        assertTrue(specificCache.update(t1));
+    }
+
+    @Test
     public void touchInCache() {
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
@@ -60,50 +79,6 @@ public class cacheTests <T extends Cacheable> {
         assertFalse(specificCache.touch(null));
         assertTrue(specificCache.put(t4));
         assertTrue(specificCache.touch(t2.id()));
-    }
-    @Test
-    public void cacheOverflow(){
-        ToCache t1 = new ToCache("1");
-        ToCache t2 = new ToCache("2");
-        ToCache t4 = new ToCache("4");
-        Cache c = new Cache(1,1);
-        c.put(t1);
-        c.put(t2);
-        c.put(t4);
-        c.put(t1);
-        c.put(t1);
-        c.put(t2);
-        c.put(t4);
-
-    }
-    @Test
-    public void updateCache(){
-        ToCache t1 = new ToCache("1");
-        ToCache t2 = new ToCache("2");
-        ToCache t4 = new ToCache("4");
-        Cache c = new Cache(1,1);
-        c.put(t1);
-        c.put(t2);
-        c.put(t4);
-        c.put(t1);
-        c.put(t1);
-        c.put(t2);
-        c.put(t4);
-        c.update(t1);
-        c.update(t4);
-        Cache ch = new Cache();
-        assertFalse(ch.update(t1));
-    }
-
-    @Test
-    public void oldCache() throws InterruptedException {
-        Cache c = new Cache(1,1);
-        ToCache t1 = new ToCache("1");
-        ToCache t2 = new ToCache("2");
-        ToCache t4 = new ToCache("4");
-        c.put(t1);
-        Thread.sleep(2000);
-        c.update(t1);
     }
 
     @Test
@@ -121,7 +96,7 @@ public class cacheTests <T extends Cacheable> {
     }
 
     @Test
-    public void testClearOldEntries() {
+    public void clearOldEntries() {
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -131,7 +106,7 @@ public class cacheTests <T extends Cacheable> {
         assertTrue(sCache.put(t2));
         try
         {
-            Thread.sleep(2000);
+            Thread.sleep(1500);
         }
         catch(InterruptedException ex)
         {
@@ -149,19 +124,14 @@ public class cacheTests <T extends Cacheable> {
 
 
 
-
-
-
-    private class ToCache implements Cacheable{
+    private class ToCache implements Cacheable {
 
         String id;
 
-        public ToCache(String id){
+        public ToCache(String id) {
             this.id = id;
         }
 
-        public String id(){ return this.id;}
-
+        public String id(){return this.id;}
     }
-
-}
+    }

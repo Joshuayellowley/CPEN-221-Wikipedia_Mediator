@@ -3,7 +3,8 @@ package cpen221.mp3.server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.IllegalFormatException;
+import java.util.List;
 import java.util.concurrent.*;
 
 import com.google.gson.*;
@@ -120,7 +121,8 @@ public class WikiMediatorServer {
                     .readLine()) {
                 System.out.println(line);
                 jsonString.append(line);
-                if (line.contains("}")) {
+                if (line.equals("}")) {
+                    try {
                         if(numClients <= maxRequests) {
                             JsonObject jo = mediate(jsonString);
                             out.print(jo);
