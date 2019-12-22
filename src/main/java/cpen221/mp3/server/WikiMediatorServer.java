@@ -228,7 +228,7 @@ public class WikiMediatorServer {
             case "getPage": {
                 Future<String> future = executor.submit(() -> mediator.getPage(finalPageTitle));
                 try {
-                    String response = future.get(timeout, TimeUnit.SECONDS);
+                    String response = future.get(timeout, TimeUnit.SECONDS);;
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", new JsonPrimitive(response));
                 } catch (InterruptedException | ExecutionException e) {
