@@ -10,29 +10,29 @@ import java.util.NoSuchElementException;
 
 /**
  * Representation Invariant:
- *  capacity > 0
- *  timeout > 0
- *  storage not null
- *  lastTimeOpened not null
- *  storage.size() == lastTimeOpened.size()
- *  storage.contains(T) == lastTimeOpened.contains(T)
- *  storage.get(T) <= Instant.now()
- *  lastTimeOpened.get(T) <= Instant.now()
- *
- *
+ * capacity > 0
+ * timeout > 0
+ * storage not null
+ * lastTimeOpened not null
+ * storage.size() == lastTimeOpened.size()
+ * storage.contains(T) == lastTimeOpened.contains(T)
+ * storage.get(T) <= Instant.now()
+ * lastTimeOpened.get(T) <= Instant.now()
+ * <p>
+ * <p>
  * Abstraction Function:
- *  Represents a cache that stores
- *  capacity generic objects 'T', in storage and lastTimeOpened
- *  for timeout seconds.
- *  Every T in storage is mapped to the time it was put into the cache.
- *  Every T in lastTimeOpened is mapped to the last time it was accessed/touched
- *  Any object that has been in the cache for timeout seconds is removed
- *  next time cache is used/updated.
- *  Default capacity is 32 Objects, and default timeout is 12 hours,
- *  43200 seconds.
- *
- *
- *  This data type is mutable.
+ * Represents a cache that stores
+ * capacity generic objects 'T', in storage and lastTimeOpened
+ * for timeout seconds.
+ * Every T in storage is mapped to the time it was put into the cache.
+ * Every T in lastTimeOpened is mapped to the last time it was accessed/touched
+ * Any object that has been in the cache for timeout seconds is removed
+ * next time cache is used/updated.
+ * Default capacity is 32 Objects, and default timeout is 12 hours,
+ * 43200 seconds.
+ * <p>
+ * <p>
+ * This data type is mutable.
  */
 public class Cache<T extends Cacheable> {
 
@@ -41,12 +41,12 @@ public class Cache<T extends Cacheable> {
 
     /* the default timeout value is 12h */
     //THIS IS IN SECONDS
-    public static final int DTIMEOUT = 60*60*12;
+    public static final int DTIMEOUT = 60 * 60 * 12;
 
     private int capacity;
     private int timeout;
-    private HashMap<T,Instant> storage;
-    private HashMap<T,Instant> lastTimeOpened;
+    private HashMap<T, Instant> storage;
+    private HashMap<T, Instant> lastTimeOpened;
 
     /**
      * Create a cache with a fixed capacity and a timeout value.
@@ -56,17 +56,17 @@ public class Cache<T extends Cacheable> {
      *
      * @param capacity the number of objects the cache can hold,
      *                 if non-positive, gets DSIZE
-     * @param timeout the duration, in seconds, an object should
-     *                be in the cache before it times out.
-     *                If non-positive, gets DTIMEOUT
+     * @param timeout  the duration, in seconds, an object should
+     *                 be in the cache before it times out.
+     *                 If non-positive, gets DTIMEOUT
      */
     public Cache(int capacity, int timeout) {
         this.capacity = DSIZE;
         this.timeout = DTIMEOUT;
-        if(capacity > 0){
+        if (capacity > 0) {
             this.capacity = capacity;
         }
-        if(timeout > 0){
+        if (timeout > 0) {
             this.timeout = timeout;
         }
         this.storage = new HashMap<>();
@@ -95,24 +95,24 @@ public class Cache<T extends Cacheable> {
 
         clearOldEntries();
 
-        if(t == null){
+        if (t == null) {
             return false;
         }
 
-        if(storage.size() < this.capacity) {
+        if (storage.size() < this.capacity) {
             storage.put(t, Instant.now());
             lastTimeOpened.put(t, Instant.now());
             return true;
-        }else{
-            for(T b : storage.keySet()){
-                if(b.id().equals(t.id())){
+        } else {
+            for (T b : storage.keySet()) {
+                if (b.id().equals(t.id())) {
                     return false;
                 }
             }
 
             long min = Long.MIN_VALUE;
             T toRemove = null;
-            if(lastTimeOpened.size() != 0) {
+            if (lastTimeOpened.size() != 0) {
                 for (T q : lastTimeOpened.keySet()) {
                     Instant i = lastTimeOpened.get(q);
                     long timeElapsed = Duration.between(i, Instant.now()).toNanos();
@@ -135,17 +135,17 @@ public class Cache<T extends Cacheable> {
     /**
      * Finds the given object T, within the cache with the given id.
      *
-     * @throws NoSuchElementException If no object with the given id is found in the cache
      * @param id the identifier of the object to be retrieved
      * @return the object that matches the identifier from the cache, if no object
      * is found throws a NoSuchElementException
+     * @throws NoSuchElementException If no object with the given id is found in the cache
      */
     public T get(String id) {
         clearOldEntries();
 
-        for(T t : storage.keySet()){
-            if(t.id().equals(id)){
-                lastTimeOpened.replace(t,Instant.now());
+        for (T t : storage.keySet()) {
+            if (t.id().equals(id)) {
+                lastTimeOpened.replace(t, Instant.now());
                 return t;
             }
         }
@@ -162,20 +162,20 @@ public class Cache<T extends Cacheable> {
      *
      * @param id the identifier of the object to "touch"
      * @return true if the id is contained in the cache and the last accessed time is changed.
-     *         If the id is not contained in the cache returns false
+     * If the id is not contained in the cache returns false
      * @mutates this.storage
      */
     public boolean touch(String id) {
 
         clearOldEntries();
 
-        if(id == null){
+        if (id == null) {
             return false;
         }
 
-        for(T t : storage.keySet()){
-            if(t.id().equals(id)){
-                storage.replace(t,Instant.now());
+        for (T t : storage.keySet()) {
+            if (t.id().equals(id)) {
+                storage.replace(t, Instant.now());
                 return true;
             }
         }
@@ -197,9 +197,9 @@ public class Cache<T extends Cacheable> {
 
         clearOldEntries();
 
-        for(T v : storage.keySet()){
-            if(t.id().equals(v.id())){
-                this.storage.replace(t,Instant.now());
+        for (T v : storage.keySet()) {
+            if (t.id().equals(v.id())) {
+                this.storage.replace(t, Instant.now());
                 return true;
             }
         }
@@ -210,16 +210,17 @@ public class Cache<T extends Cacheable> {
      * Clears entry that have been in the cache for a time period longer than
      * the specified timeout.
      */
-    private void clearOldEntries(){
+    private void clearOldEntries() {
 
         List<T> toRemove = new ArrayList<>();
-        for(T t : storage.keySet()){
-            if(Duration.between(storage.get(t),Instant.now()).toNanos()/1000000 >= this.timeout){
+        for (T t : storage.keySet()) {
+            if (Duration.between(storage.get(t), Instant.now()).toNanos() / 1000000
+                    >= this.timeout) {
                 toRemove.add(t);
             }
         }
 
-        for(T t : toRemove){
+        for (T t : toRemove) {
             storage.remove(t);
             lastTimeOpened.remove(t);
         }

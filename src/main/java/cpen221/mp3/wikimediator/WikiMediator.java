@@ -20,48 +20,43 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import cpen221.mp3.cache.Cache;
-import cpen221.mp3.wikimediator.WikiPage;
-import cpen221.mp3.cache.Cacheable;
 import fastily.jwiki.core.Wiki;
-import fastily.jwiki.dwrap.Revision;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 
-import javax.management.Query;
 
 /**
  * Representation Invariant:
- *  requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
- *  For all Instants i in requestTimes, i < Instant.now()
- *  For all values i in lastAccessed, i < Instant.now()
- *  For all ints i in timesAccessed, i > 0
- *  lastAccessed.size() == timesAccessed.size()
- *  lastAccessed.contains(String s) == timesAccessed.contains(String s)
- *  wiki has the domain en.wikipedia.org
- *  cache has a capacity of 256 and a timeout of 12*60*60 seconds
- *
+ * requestTimes, lastAccessed, timesAccessed, wiki, and cache not null.
+ * For all Instants i in requestTimes, i < Instant.now()
+ * For all values i in lastAccessed, i < Instant.now()
+ * For all ints i in timesAccessed, i > 0
+ * lastAccessed.size() == timesAccessed.size()
+ * lastAccessed.contains(String s) == timesAccessed.contains(String s)
+ * wiki has the domain en.wikipedia.org
+ * cache has a capacity of 256 and a timeout of 12*60*60 seconds
+ * <p>
  * Abstraction Function:
- *  Represents a Wiki that allows for more functionality of
- *  searching the en.wikipedia.org search directory and accessing page text
- *  and information of recent searches.
- *  requestTimes.size() = the total number of requests on any instance of WikiMediator
- *  Instant within requestTimes is the time of a basic page request and is not null
- *  lastAccessed maps a String representing a wikipedia page title to the last time it was accessed
- *  timesAccessed maps a String representing a wikipedia page title to the amount of times it has been accessed
- *  wiki provides access to en.wikipedia.org and access to the search function and page text and page links on
- *  wikipedia.org
- *
+ * Represents a Wiki that allows for more functionality of
+ * searching the en.wikipedia.org search directory and accessing page text
+ * and information of recent searches.
+ * requestTimes.size() = the total number of requests on any instance of WikiMediator
+ * Instant within requestTimes is the time of a basic page request and is not null
+ * lastAccessed maps a String representing a wikipedia page title to the last time it was accessed
+ * timesAccessed maps a String representing a wikipedia page title to the amount of times it has been accessed
+ * wiki provides access to en.wikipedia.org and access to the search function and page text and page links on
+ * wikipedia.org
  */
 public class WikiMediator {
 
     private static List<Instant> requestTimes = new ArrayList<>();
-    private static HashMap<String,Instant> lastAccessed = new HashMap<>();
+    private static HashMap<String, Instant> lastAccessed = new HashMap<>();
     private static HashMap<String, List<Instant>> last30Secs = new HashMap<>();
-    private static HashMap<String,Integer> timesAccessed = new HashMap<>();
+    private static HashMap<String, Integer> timesAccessed = new HashMap<>();
     private Wiki wiki = new Wiki("en.wikipedia.org");
-    private Cache cache = new Cache(256, 12*60*60);
+    private Cache cache = new Cache(256, 12 * 60 * 60);
 
-    public WikiMediator(){
+    public WikiMediator() {
     }
 
 
@@ -73,29 +68,28 @@ public class WikiMediator {
      * @param id denoting the object in the cache that is being accessed
      * @mutates timesAccessed, lastAccessed
      */
-    private void updateAccess(String id){
+    private void updateAccess(String id) {
 
-        if(!timesAccessed.containsKey(id)){
+        if (!timesAccessed.containsKey(id)) {
             timesAccessed.put(id, 1);
-        }else{
-            timesAccessed.replace(id,timesAccessed.get(id) + 1);
+        } else {
+            timesAccessed.replace(id, timesAccessed.get(id) + 1);
         }
 
-        if(!lastAccessed.containsKey(id)){
+        if (!lastAccessed.containsKey(id)) {
             lastAccessed.put(id, Instant.now());
-        }else{
+        } else {
             lastAccessed.replace(id, Instant.now());
         }
 
-        if(!last30Secs.containsKey(id)){
-            last30Secs.put(id,new ArrayList<>());
+        if (!last30Secs.containsKey(id)) {
+            last30Secs.put(id, new ArrayList<>());
             last30Secs.get(id).add(Instant.now());
-        }else{
+        } else {
             last30Secs.get(id).add(Instant.now());
         }
 
     }
-
 
 
     /**
@@ -104,39 +98,39 @@ public class WikiMediator {
      *
      * @mutates this.requestTimes
      */
-    private void addRequest(){
+    private void addRequest() {
         requestTimes.add(Instant.now());
     }
 
     /**
      * Helper method used to log all statistics gathered by the implementation and save onto this device's harddrive.
      */
-    private void logData(){
+    private void logData() {
         try {
             FileWriter fileWriter = new FileWriter("local/data");
             PrintWriter printWriter = new PrintWriter(fileWriter);
             printWriter.println("Times Accessed");
             printWriter.println("______________");
-            for(Map.Entry<String,Integer> e: timesAccessed.entrySet()){
-                printWriter.println(e.getKey() + ": "+ e.getValue());
+            for (Map.Entry<String, Integer> e : timesAccessed.entrySet()) {
+                printWriter.println(e.getKey() + ": " + e.getValue());
             }
             printWriter.println("Last Accessed");
             printWriter.println("______________");
-            for(Map.Entry<String,Instant> e: lastAccessed.entrySet()){
-                printWriter.println(e.getKey() + ": "+ e.getValue());
+            for (Map.Entry<String, Instant> e : lastAccessed.entrySet()) {
+                printWriter.println(e.getKey() + ": " + e.getValue());
             }
 
             printWriter.println("Request Times");
             printWriter.println("______________");
-            for(Instant i: requestTimes){
+            for (Instant i : requestTimes) {
                 printWriter.println(i);
             }
             printWriter.close();
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
     /**
      * Searches on en.wikipedia.org for relevant pages to the given String query.
      * The results will be returned in terms of most relevant in non-ascending order.
@@ -147,14 +141,12 @@ public class WikiMediator {
      * @return a list of Strings representing the relevant pages in non-ascending order
      * @mutates this.timesAccessed, this.lastAccessed, this.requestTimes
      */
-    synchronized public List<String> simpleSearch(String query, int limit){
+    public synchronized List<String> simpleSearch(String query, int limit) {
         addRequest();
         updateAccess(query);
         logData();
         return wiki.search(query, limit);
     }
-
-
 
 
     /**
@@ -163,12 +155,11 @@ public class WikiMediator {
      * accessing wikipedia again.
      *
      * @param pageTitle is the page title of the page with the desired text
-     *
      * @return a String of the desired page text.  If there is no page of the specified
-     *         pageTitle returns an empty String
+     * pageTitle returns an empty String
      * @mutates this.timesAccessed, this.lastAccessed, this.cache, this.requestTimes
      */
-    synchronized public String getPage(String pageTitle) {
+    public synchronized String getPage(String pageTitle) {
 
         addRequest();
         updateAccess(pageTitle);
@@ -177,7 +168,7 @@ public class WikiMediator {
         try {
             WikiPage toGet = (WikiPage) cache.get(pageTitle);
             return toGet.pageText();
-        } catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             WikiPage toGet = new WikiPage(pageTitle);
             cache.put(toGet);
             String pageText = wiki.getPageText(pageTitle);
@@ -192,22 +183,21 @@ public class WikiMediator {
      * accessing wikipedia again.
      *
      * @param pageTitle is the page title of the page to start at.
-     * @param hops the amount of jumps from the original webpage that can be made
-     *
+     * @param hops      the amount of jumps from the original webpage that can be made
      * @return a List of Strings of pages that can be accessed through
-     *         a given amount of hops.  If the given pageTitle is not a valid wikipedia page
-     *         on en.wikipedia.org an empty list is returned.
+     * a given amount of hops.  If the given pageTitle is not a valid wikipedia page
+     * on en.wikipedia.org an empty list is returned.
      * @mutates this.requestTimes
      */
-    synchronized public List<String> getConnectedPages(String pageTitle, int hops){
+    public synchronized List<String> getConnectedPages(String pageTitle, int hops) {
 
         addRequest();
 
-        if(!wiki.exists(pageTitle)){
+        if (!wiki.exists(pageTitle)) {
             return new ArrayList<>();
         }
 
-        if(hops == 0){
+        if (hops == 0) {
             List<String> single = new ArrayList<>();
             single.add(pageTitle);
             return single;
@@ -218,12 +208,12 @@ public class WikiMediator {
 
         int count = 1;
 
-        while(count != hops){
+        while (count != hops) {
             List<String> toAdd = new ArrayList<>();
-            for(String s : allPages){
+            for (String s : allPages) {
                 List<String> tempList = wiki.getLinksOnPage(s);
-                for(String s2 : tempList){
-                    if(!allPages.contains(s2)){
+                for (String s2 : tempList) {
+                    if (!allPages.contains(s2)) {
                         toAdd.add(s2);
                     }
                 }
@@ -241,16 +231,15 @@ public class WikiMediator {
      * non-increasing order of frequency.
      *
      * @param limit > 0, the maximum size of the list of Strings to be returned.
-     *
      * @return a List of Strings sorted by the amount of times the String has been
-     *         used in simpleSearch and getPage requests.  The list is sorted in
-     *         non-increasing order of count.
+     * used in simpleSearch and getPage requests.  The list is sorted in
+     * non-increasing order of count.
      * @mutates this.requestTimes
      */
-    synchronized public List<String> zeitgeist(int limit){
+    public synchronized List<String> zeitgeist(int limit) {
 
         addRequest();
-        HashMap<String,Integer> start = (HashMap<String,Integer>) timesAccessed.clone();
+        HashMap<String, Integer> start = (HashMap<String, Integer>) timesAccessed.clone();
         List<String> result = new ArrayList<>();
 
         start.entrySet()
@@ -269,13 +258,12 @@ public class WikiMediator {
      * non-increasing order of frequency.
      *
      * @param limit > 0, the maximum size of the list of Strings to be returned.
-     *
      * @return a List of Strings sorted by the amount of times the String has been
-     *         used in simpleSearch and getPage requests.  The list is sorted in
-     *         non-increasing order of count.
+     * used in simpleSearch and getPage requests.  The list is sorted in
+     * non-increasing order of count.
      * @mutates this.requestTimes
      */
-    synchronized public List<String> trending(int limit){
+    public synchronized List<String> trending(int limit) {
 
         addRequest();
         List<String> result = new ArrayList<>();
@@ -294,24 +282,24 @@ public class WikiMediator {
 //                .limit(limit)
 //                .forEachOrdered(x -> result.add(x.getKey()));
 
-        HashMap<String, List<Instant>> start = (HashMap<String,List<Instant>>) last30Secs.clone();
-        HashMap<String,Integer> count = new HashMap<>();
+        HashMap<String, List<Instant>> start = (HashMap<String, List<Instant>>) last30Secs.clone();
+        HashMap<String, Integer> count = new HashMap<>();
 
-        for(Map.Entry<String, List<Instant>> e : start.entrySet()){
+        for (Map.Entry<String, List<Instant>> e : start.entrySet()) {
             int i = e.getValue().size() - 1;
 
             int amount = 0;
-                while (Duration.between((e.getValue().get(i)), Instant.now()).toSeconds() <= 30) {
-                    if (!count.containsKey(e.getKey())) {
-                        count.put(e.getKey(), 1);
-                    } else {
-                        count.replace(e.getKey(), count.get(e.getKey())+1);
-                    }
-                    i--;
-                    if(i == -1){
-                        break;
-                    }
+            while (Duration.between((e.getValue().get(i)), Instant.now()).toSeconds() <= 30) {
+                if (!count.containsKey(e.getKey())) {
+                    count.put(e.getKey(), 1);
+                } else {
+                    count.replace(e.getKey(), count.get(e.getKey()) + 1);
                 }
+                i--;
+                if (i == -1) {
+                    break;
+                }
+            }
 
         }
 
@@ -332,24 +320,24 @@ public class WikiMediator {
      * in any 30 second period.
      *
      * @return an int of the highest amount of basic requests to occur in any
-     *         30 second period.
+     * 30 second period.
      * @mutates this.requestTimes
      */
-    synchronized public int peakLoad30s(){
+    public synchronized int peakLoad30s() {
 
         addRequest();
 
         int count = 0;
         int max = 0;
 
-        for(int i = 0; i < requestTimes.size(); i++){
+        for (int i = 0; i < requestTimes.size(); i++) {
             Instant start = requestTimes.get(i);
             count = 1;
-            for(int p = i+1; p < requestTimes.size() - i; p++){
+            for (int p = i + 1; p < requestTimes.size() - i; p++) {
 
-                if(Duration.between(start,requestTimes.get(p)).toSeconds() <= 30){
+                if (Duration.between(start, requestTimes.get(p)).toSeconds() <= 30) {
                     count++;
-                    if(count > max){
+                    if (count > max) {
                         max = count;
                     }
                 }
@@ -361,22 +349,23 @@ public class WikiMediator {
 
     /**
      * Gets a path from startPage to stopPage, if one exists.
+     *
      * @param startPage, the id of the page to start at
-     * @param stopPage, the id of the page to end at.
+     * @param stopPage,  the id of the page to end at.
      * @return a list of page ids starting with startPage, and ending with stopPage.
-     *          Each page is connected to the following page in the path. If startPage/stopPage
-     *          is not a valid page, or no path exists, then return an empty list.
+     * Each page is connected to the following page in the path. If startPage/stopPage
+     * is not a valid page, or no path exists, then return an empty list.
      */
-    synchronized public List<String> getPath(String startPage, String stopPage){
+    public synchronized List<String> getPath(String startPage, String stopPage) {
 
         Instant begin = Instant.now();
         boolean foundIt = false;
 
-        if(!wiki.exists(startPage) || !wiki.exists(stopPage)){
+        if (!wiki.exists(startPage) || !wiki.exists(stopPage)) {
             return new ArrayList<>();
         }
 
-        if(startPage.equals(stopPage)){
+        if (startPage.equals(stopPage)) {
             List<String> single = new ArrayList<>();
             single.add(startPage);
             return single;
@@ -389,9 +378,9 @@ public class WikiMediator {
 
         result.add(startPage);
 
-        for(String s: startList){
+        for (String s : startList) {
 
-            if(checkForPage(s,stopPage)){
+            if (checkForPage(s, stopPage)) {
                 result.add(s);
                 result.add(stopPage);
                 return result;
@@ -399,7 +388,7 @@ public class WikiMediator {
 
             Hop2List.addAll(wiki.getLinksOnPage(s));
 
-            if(Duration.between(begin,Instant.now()).toSeconds() >= 280){
+            if (Duration.between(begin, Instant.now()).toSeconds() >= 280) {
                 return new ArrayList<>();
             }
         }
@@ -409,21 +398,23 @@ public class WikiMediator {
 
     /**
      * Helper method for get path
+     *
      * @param p1 the id of the current page
      * @param p2 the id of the target page
      * @return true iff p1 contains p2 as a link
      */
-    private boolean checkForPage(String p1, String p2){
+    private boolean checkForPage(String p1, String p2) {
         return wiki.getLinksOnPage(p1).contains(p2);
     }
 
     /**
      * Executes a detailed search given a query containing conditions of the search
+     *
      * @param query, the string to specify which pages to return
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, throws an InvalidQueryException.
      */
-    synchronized public List<String> executeQuery(String query) throws InvalidQueryException{
+    public synchronized List<String> executeQuery(String query) throws InvalidQueryException {
 
         //SOME CODE TAKEN FROM EXERCISE 14 POLYNOMIAL FACTORY
         CharStream stream = new ANTLRInputStream(query);
@@ -461,22 +452,22 @@ public class WikiMediator {
 
             String returnType = "";
 
-            if(t.charAt(0) == 'p') {
+            if (t.charAt(0) == 'p') {
                 returnType = "page";
             }
 
-            if(t.charAt(0) == 'c'){
+            if (t.charAt(0) == 'c') {
                 returnType = "category";
             }
 
-            if(t.charAt(0) == 'a'){
+            if (t.charAt(0) == 'a') {
                 returnType = "author";
             }
 
             QueryCondition eval = new QueryCondition(condition.getText());
             return evaluateConditions(returnType, eval, sort.getText());
 
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new InvalidQueryException();
         }
     }
@@ -485,30 +476,30 @@ public class WikiMediator {
      * Helper Method that works towards evaluating query conditions
      *
      * @param returnType, the information the query is looking to receive
-     * @param eval, the query condition to be evaluated
-     * @param sort, Specification if the query response should be in ascending or descending order or if order
-     *              is not an issue
+     * @param eval,       the query condition to be evaluated
+     * @param sort,       Specification if the query response should be in ascending or descending order or if order
+     *                    is not an issue
      * @return a list of Strings that correspond to the search query.
      */
-    private List<String> evaluateConditions(String returnType, QueryCondition eval, String sort){
+    private List<String> evaluateConditions(String returnType, QueryCondition eval, String sort) {
 
         List<String> result = new ArrayList<>();
 
-        if(returnType.equals("page")){
+        if (returnType.equals("page")) {
             result = evalForPage(eval);
         }
 
-        if(returnType.equals("author")){
+        if (returnType.equals("author")) {
             result = evalForAuthor(eval);
         }
 
-        if(returnType.equals("category")){
+        if (returnType.equals("category")) {
             result = evalForCategory(eval);
         }
 
-        if(sort.equals("asc")){
+        if (sort.equals("asc")) {
             Collections.sort(result);
-        }else if(sort.equals("desc")){
+        } else if (sort.equals("desc")) {
             Collections.sort(result, Collections.reverseOrder());
         }
 
@@ -520,94 +511,93 @@ public class WikiMediator {
      * Helper Method that works towards evaluating query conditions
      *
      * @param eval, the query condition to be evaluated
-     *
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, throws an InvalidQueryException.
      */
-    private List<String> evalForPage(QueryCondition eval){
+    private List<String> evalForPage(QueryCondition eval) {
         List<String> result = new ArrayList<>();
         List<String> fromLeft = new ArrayList<>();
         List<String> fromRight = new ArrayList<>();
 
         String search = "";
-        if(!eval.compound){
+        if (!eval.compound) {
 
-            for(String s : eval.first.keySet()){
+            for (String s : eval.first.keySet()) {
                 search = s;
             }
 
-            if(search.equals("category")){
+            if (search.equals("category")) {
                 String temp = eval.first.get(search);
                 result = wiki.getCategoryMembers(temp);
             }
 
-            if(search.equals("title")){
+            if (search.equals("title")) {
                 String temp = eval.first.get(search);
-                if(wiki.exists(temp)) {
+                if (wiki.exists(temp)) {
                     result.add(temp);
                 }
             }
 
-            if(search.equals("author")){
+            if (search.equals("author")) {
                 String temp = eval.first.get(search);
                 result.addAll(wiki.getUserUploads(temp));
             }
 
-        }else{
-            if(eval.left == null){
-                for(String s : eval.first.keySet()){
+        } else {
+            if (eval.left == null) {
+                for (String s : eval.first.keySet()) {
                     search = s;
                 }
                 String temp = eval.first.get(search);
 
-                if(search.equals("category")){
+                if (search.equals("category")) {
                     fromLeft = wiki.getCategoryMembers(temp);
                 }
 
-                if(search.equals("title")){
-                    if(wiki.exists(temp)) {
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
                         fromLeft.add(temp);
                     }
                 }
 
-                if(search.equals("author")){
+                if (search.equals("author")) {
                     fromLeft.addAll(wiki.getUserUploads(temp));
                 }
-            }else{
+            } else {
                 fromLeft = evalForPage(eval.left);
             }
 
-            if(eval.right == null){
-                for(String s : eval.second.keySet()){
+            if (eval.right == null) {
+                for (String s : eval.second.keySet()) {
                     search = s;
                 }
                 String temp = eval.second.get(search);
 
-                if(search.equals("category")){
+                if (search.equals("category")) {
                     fromRight = wiki.getCategoryMembers(temp);
                 }
 
-                if(search.equals("title")){
-                    if(wiki.exists(temp)) {
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
                         fromRight.add(temp);
                     }
                 }
 
-                if(search.equals("author")){
+                if (search.equals("author")) {
                     fromRight.addAll(wiki.getUserUploads(temp));
                 }
-            }else{
+            } else {
                 fromRight = evalForPage(eval.right);
             }
 
-            if(eval.type.equals("or")){
+            if (eval.type.equals("or")) {
                 result.addAll(fromLeft);
                 result.addAll(fromRight);
             }
 
-            if(eval.type.equals("and")){
-                for(String s : fromLeft){
-                    if(fromRight.contains(s)){
+            if (eval.type.equals("and")) {
+                for (String s : fromLeft) {
+                    if (fromRight.contains(s)) {
                         result.add(s);
                     }
                 }
@@ -621,101 +611,100 @@ public class WikiMediator {
      * Helper Method that works towards evaluating query conditions
      *
      * @param eval, the query condition to be evaluated
-     *
      * @return a list of author tags that correspond to the search query.
      */
-    private List<String> evalForAuthor(QueryCondition eval){
+    private List<String> evalForAuthor(QueryCondition eval) {
         List<String> result = new ArrayList<>();
         List<String> fromLeft = new ArrayList<>();
         List<String> fromRight = new ArrayList<>();
         String search = "";
 
-        if(!eval.compound){
+        if (!eval.compound) {
 
-            for(String s : eval.first.keySet()){
+            for (String s : eval.first.keySet()) {
                 search = s;
             }
 
-            if(search.equals("category")){
+            if (search.equals("category")) {
                 String temp = eval.first.get(search);
                 List<String> authorList = wiki.getCategoryMembers(temp);
-                for(String s : authorList){
+                for (String s : authorList) {
                     result.add(wiki.getLastEditor(s));
                 }
             }
 
-            if(search.equals("title")){
+            if (search.equals("title")) {
                 String temp = eval.first.get(search);
-                if(wiki.exists(temp)) {
+                if (wiki.exists(temp)) {
                     result.add(wiki.getLastEditor(temp));
                 }
             }
 
-            if(search.equals("author")){
+            if (search.equals("author")) {
                 result.add(eval.first.get(search));
             }
 
-        }else{
-            if(eval.left == null){
-                for(String s : eval.first.keySet()){
+        } else {
+            if (eval.left == null) {
+                for (String s : eval.first.keySet()) {
                     search = s;
                 }
                 String temp = eval.first.get(search);
 
-                if(search.equals("category")){
+                if (search.equals("category")) {
                     List<String> authorList = wiki.getCategoryMembers(temp);
-                    for(String s : authorList){
+                    for (String s : authorList) {
                         fromLeft.add(wiki.getLastEditor(s));
                     }
                 }
 
-                if(search.equals("title")){
-                    if(wiki.exists(temp)) {
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
                         fromLeft.add(wiki.getLastEditor(temp));
                     }
                 }
 
-                if(search.equals("author")){
+                if (search.equals("author")) {
                     fromLeft.add(temp);
                 }
-            }else{
+            } else {
                 fromLeft = evalForAuthor(eval.left);
             }
 
-            if(eval.right == null){
-                for(String s : eval.second.keySet()){
+            if (eval.right == null) {
+                for (String s : eval.second.keySet()) {
                     search = s;
                 }
                 String temp = eval.second.get(search);
 
-                if(search.equals("category")){
+                if (search.equals("category")) {
                     List<String> authorList = wiki.getCategoryMembers(temp);
-                    for(String s : authorList){
+                    for (String s : authorList) {
                         fromRight.add(wiki.getLastEditor(s));
                     }
                 }
 
-                if(search.equals("title")){
-                    if(wiki.exists(temp)) {
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
                         fromRight.add(wiki.getLastEditor(temp));
                     }
                 }
 
-                if(search.equals("author")){
+                if (search.equals("author")) {
                     fromRight.add(temp);
                 }
-            }else{
+            } else {
                 fromRight = evalForAuthor(eval.right);
             }
 
-            if(eval.type.equals("or")){
+            if (eval.type.equals("or")) {
                 result.addAll(fromLeft);
                 result.addAll(fromRight);
             }
 
-            if(eval.type.equals("and")){
-                for(String s : fromLeft){
-                    if(fromRight.contains(s)){
+            if (eval.type.equals("and")) {
+                for (String s : fromLeft) {
+                    if (fromRight.contains(s)) {
                         result.add(s);
                     }
                 }
@@ -729,42 +718,41 @@ public class WikiMediator {
      * Helper Method that works towards evaluating query conditions
      *
      * @param eval, the query condition to be evaluated
-     *
      * @return a list of categories that correspond to the search query.
      */
-    private List<String> evalForCategory(QueryCondition eval){
+    private List<String> evalForCategory(QueryCondition eval) {
         List<String> result = new ArrayList<>();
         List<String> fromLeft = new ArrayList<>();
         List<String> fromRight = new ArrayList<>();
         String search = "";
 
-        if(!eval.compound){
-            for(String s : eval.first.keySet()){
+        if (!eval.compound) {
+            for (String s : eval.first.keySet()) {
                 search = s;
             }
 
-            if(search.equals("category")){
+            if (search.equals("category")) {
                 String temp = eval.first.get(search);
                 result.add(temp);
             }
 
-            if(search.equals("title")){
+            if (search.equals("title")) {
                 String temp = eval.first.get(search);
-                if(wiki.exists(temp)) {
+                if (wiki.exists(temp)) {
                     result.addAll(wiki.getCategoriesOnPage(temp));
                 }
             }
 
-            if(search.equals("author")){
+            if (search.equals("author")) {
                 String temp = eval.first.get(search);
                 List<String> pageList = (wiki.getUserUploads(temp));
-                for(String s : pageList){
+                for (String s : pageList) {
                     result.addAll(wiki.getCategoriesOnPage(s));
                 }
 
             }
 
-        }else {
+        } else {
             if (eval.left == null) {
                 for (String s : eval.first.keySet()) {
                     search = s;

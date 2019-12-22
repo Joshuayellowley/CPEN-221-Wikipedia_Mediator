@@ -3,24 +3,19 @@ package cpen221.mp3.server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.concurrent.*;
 
 import com.google.gson.*;
-import com.google.gson.stream.JsonWriter;
 import cpen221.mp3.wikimediator.InvalidQueryException;
 import cpen221.mp3.wikimediator.WikiMediator;
-
-import java.util.IllegalFormatException;
-import java.util.List;
-
 
 
 /**
  * Representation Invariant:
  * serverSocket != null
  * maxClients >= 0
+ * maxRequests >= 0
  * <p>
  * Abstraction Function:
  * Represents a server which accepts and handles
@@ -31,6 +26,12 @@ import java.util.List;
  * for a response from Wikipedia before declaring the operation has failed.
  * Response is in a JSON formatted string, specifying the id of the request,
  * the status and a response field.
+ */
+
+/**
+ * Thread Safety: All instances of WikiMediator that are served by this server are synchonized on WikiMediator.class.
+ * The data used while serving one client is not shared between any other thread. The values passed to the socket are
+ * Strings, so clients pass this immutable data, which is handled discretely from other client's data.
  */
 
 public class WikiMediatorServer {
@@ -69,25 +70,25 @@ public class WikiMediatorServer {
     public void serve() throws IOException {
         while (true) {
             // block until a client connects
-                final Socket socket = serverSocket.accept();
-                // create a new thread to handle that client
-                Thread handler = new Thread(() -> {
+            final Socket socket = serverSocket.accept();
+            // create a new thread to handle that client
+            Thread handler = new Thread(() -> {
+                try {
                     try {
-                        try {
-                            handle(socket);
-                        } finally {
-                            socket.close();
-                        }
-                    } catch (IOException ioe) {
-                        // this exception wouldn't terminate serve(),
-                        // since we're now on a different thread, but
-                        // we still need to handle it
-                        ioe.printStackTrace();
+                        handle(socket);
+                    } finally {
+                        socket.close();
                     }
-                });
-                // start the thread
-                handler.start();
-                numClients++;
+                } catch (IOException ioe) {
+                    // this exception wouldn't terminate serve(),
+                    // since we're now on a different thread, but
+                    // we still need to handle it
+                    ioe.printStackTrace();
+                }
+            });
+            // start the thread
+            handler.start();
+            numClients++;
         }
     }
 
@@ -122,14 +123,13 @@ public class WikiMediatorServer {
                 System.out.println(line);
                 jsonString.append(line);
                 if (line.equals("}")) {
-                        if(numClients <= maxRequests) {
-                            JsonObject jo = mediate(jsonString);
-                            out.print(jo);
-                        }
-                        else{
-                            System.err.println("reply: too many requests");
-                            out.print("too many requests, please try again later.\n");
-                        }
+                    if (numClients <= maxRequests) {
+                        JsonObject jo = mediate(jsonString);
+                        out.print(jo);
+                    } else {
+                        System.err.println("reply: too many requests");
+                        out.print("too many requests, please try again later.\n");
+                    }
                     out.flush();
                     break;
                 }
@@ -225,7 +225,7 @@ public class WikiMediatorServer {
             case "getPage": {
                 Future<String> future = executor.submit(() -> mediator.getPage(finalPageTitle));
                 try {
-                    String response = future.get(timeout, TimeUnit.SECONDS);;
+                    String response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
                     finished.add("response", new JsonPrimitive(response));
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -316,14 +316,14 @@ public class WikiMediatorServer {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Operation timed out"));
                     future.cancel(true);
-                } catch (ExecutionException | IllegalArgumentException e){
+                } catch (ExecutionException | IllegalArgumentException e) {
                     finished.add("status", new JsonPrimitive("failed"));
                     finished.add("response", new JsonPrimitive("Invalid Query"));
                     future.cancel(true);
                 }
                 break;
             }
-            default:{
+            default: {
                 finished.add("status", new JsonPrimitive("failed"));
                 finished.add("response", new JsonPrimitive("Invalid Query"));
             }
