@@ -337,7 +337,7 @@ public class WikiMediator {
      * Executes a detailed search given a query containing conditions of the search
      * @param query, the string to specify which pages to return
      * @return a list of page ids that correspond to the search query. If the query
-     * does not follow the proper grammar, return an empty List.
+     * does not follow the proper grammar, throws an InvalidQueryException.
      */
     public List<String> executeQuery(String query) throws InvalidQueryException{
 
@@ -396,6 +396,16 @@ public class WikiMediator {
         }
     }
 
+    /**
+     * Helper Method that works towards evaluating query conditions
+     *
+     * @param returnType, the information the query is looking to receive
+     * @param eval, the query condition to be evaluated
+     * @param sort, Specification if the query response should be in ascending or descending order or if order
+     *              is not an issue
+     * @return a list of page ids that correspond to the search query. If the query
+     * does not follow the proper grammar, throws an InvalidQueryException.
+     */
     private List<String> evaluateConditions(String returnType, QueryCondition eval, String sort){
 
         List<String> result = new ArrayList<>();

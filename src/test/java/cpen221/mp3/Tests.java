@@ -131,7 +131,6 @@ public class Tests {
 
     @Test
     public void testBasicGetPath2(){
-
         String s1 = "Canada";
         String s2 = "Canada";
         WikiMediator w = new WikiMediator();
