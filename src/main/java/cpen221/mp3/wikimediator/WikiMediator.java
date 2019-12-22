@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 
@@ -55,7 +56,7 @@ public class WikiMediator {
 
     private static List<Instant> requestTimes = new ArrayList<>();
     private static HashMap<String,Instant> lastAccessed = new HashMap<>();
-    //private static HashMap<String,Integer> last30Secs = new HashMap<>();
+    private static HashMap<String, List<Instant>> last30Secs = new HashMap<>();
     private static HashMap<String,Integer> timesAccessed = new HashMap<>();
     private Wiki wiki = new Wiki("en.wikipedia.org");
     private Cache cache = new Cache(256, 12*60*60);
@@ -85,6 +86,14 @@ public class WikiMediator {
         }else{
             lastAccessed.replace(id, Instant.now());
         }
+
+        if(!last30Secs.containsKey(id)){
+            last30Secs.put(id,new ArrayList<>());
+            last30Secs.get(id).add(Instant.now());
+        }else{
+            last30Secs.get(id).add(Instant.now());
+        }
+
     }
 
 
@@ -138,7 +147,7 @@ public class WikiMediator {
      * @return a list of Strings representing the relevant pages in non-ascending order
      * @mutates this.timesAccessed, this.lastAccessed, this.requestTimes
      */
-    public List<String> simpleSearch(String query, int limit){
+    synchronized public List<String> simpleSearch(String query, int limit){
         addRequest();
         updateAccess(query);
         logData();
@@ -159,7 +168,7 @@ public class WikiMediator {
      *         pageTitle returns an empty String
      * @mutates this.timesAccessed, this.lastAccessed, this.cache, this.requestTimes
      */
-    public String getPage(String pageTitle) {
+    synchronized public String getPage(String pageTitle) {
 
         addRequest();
         updateAccess(pageTitle);
@@ -173,7 +182,7 @@ public class WikiMediator {
             cache.put(toGet);
             String pageText = wiki.getPageText(pageTitle);
             return pageText;
-         }
+        }
     }
 
 
@@ -190,7 +199,7 @@ public class WikiMediator {
      *         on en.wikipedia.org an empty list is returned.
      * @mutates this.requestTimes
      */
-    public List<String> getConnectedPages(String pageTitle, int hops){
+    synchronized public List<String> getConnectedPages(String pageTitle, int hops){
 
         addRequest();
 
@@ -238,7 +247,7 @@ public class WikiMediator {
      *         non-increasing order of count.
      * @mutates this.requestTimes
      */
-    public List<String> zeitgeist(int limit){
+    synchronized public List<String> zeitgeist(int limit){
 
         addRequest();
         HashMap<String,Integer> start = (HashMap<String,Integer>) timesAccessed.clone();
@@ -266,24 +275,53 @@ public class WikiMediator {
      *         non-increasing order of count.
      * @mutates this.requestTimes
      */
-    public List<String> trending(int limit){
+    synchronized public List<String> trending(int limit){
 
         addRequest();
         List<String> result = new ArrayList<>();
 
-        HashMap<String,Instant> start = (HashMap<String,Instant>) lastAccessed.clone();
-        HashMap<String,Long> timeMap = new HashMap<>();
+//        HashMap<String,Instant> start = (HashMap<String,Instant>) lastAccessed.clone();
+//        HashMap<String,Long> timeMap = new HashMap<>();
+//
+//        for(String s : start.keySet()){
+//            timeMap.put(s, Duration.between(start.get(s),Instant.now()).toSeconds());
+//        }
+//
+//        timeMap.entrySet()
+//                .stream()
+//                .filter(entry -> entry.getValue() < 30)
+//                .sorted(HashMap.Entry.comparingByValue(Comparator.naturalOrder()))
+//                .limit(limit)
+//                .forEachOrdered(x -> result.add(x.getKey()));
 
-        for(String s : start.keySet()){
-            timeMap.put(s, Duration.between(start.get(s),Instant.now()).toSeconds());
+        HashMap<String, List<Instant>> start = (HashMap<String,List<Instant>>) last30Secs.clone();
+        HashMap<String,Integer> count = new HashMap<>();
+
+        for(Map.Entry<String, List<Instant>> e : start.entrySet()){
+            int i = e.getValue().size() - 1;
+
+            int amount = 0;
+                while (Duration.between((e.getValue().get(i)), Instant.now()).toSeconds() <= 30) {
+                    if (!count.containsKey(e.getKey())) {
+                        count.put(e.getKey(), 1);
+                    } else {
+                        count.replace(e.getKey(), count.get(e.getKey())+1);
+                    }
+                    i--;
+                    if(i == -1){
+                        break;
+                    }
+                }
+
         }
 
-        timeMap.entrySet()
+        count.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue() < 30)
-                .sorted(HashMap.Entry.comparingByValue(Comparator.naturalOrder()))
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .limit(limit)
                 .forEachOrdered(x -> result.add(x.getKey()));
+
+//        Collections.sort(result,Collections.reverseOrder());
 
         return result;
     }
@@ -297,7 +335,7 @@ public class WikiMediator {
      *         30 second period.
      * @mutates this.requestTimes
      */
-    public int peakLoad30s(){
+    synchronized public int peakLoad30s(){
 
         addRequest();
 
@@ -329,7 +367,7 @@ public class WikiMediator {
      *          Each page is connected to the following page in the path. If startPage/stopPage
      *          is not a valid page, or no path exists, then return an empty list.
      */
-    public List<String> getPath(String startPage, String stopPage){
+    synchronized public List<String> getPath(String startPage, String stopPage){
 
         Instant begin = Instant.now();
         boolean foundIt = false;
@@ -369,6 +407,12 @@ public class WikiMediator {
         return new ArrayList<>();
     }
 
+    /**
+     * Helper method for get path
+     * @param p1 the id of the current page
+     * @param p2 the id of the target page
+     * @return true iff p1 contains p2 as a link
+     */
     private boolean checkForPage(String p1, String p2){
         return wiki.getLinksOnPage(p1).contains(p2);
     }
@@ -379,8 +423,9 @@ public class WikiMediator {
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, throws an InvalidQueryException.
      */
-    public List<String> executeQuery(String query) throws InvalidQueryException{
+    synchronized public List<String> executeQuery(String query) throws InvalidQueryException{
 
+        //SOME CODE TAKEN FROM EXERCISE 14 POLYNOMIAL FACTORY
         CharStream stream = new ANTLRInputStream(query);
         WikiQueryLexer lexer = new WikiQueryLexer(stream);
         lexer.reportErrorsAsExceptions();
@@ -393,43 +438,43 @@ public class WikiMediator {
         // Generate the parse tree using the starter rule.
         try {
             ParseTree tree = parser.wikiquery(); // "root" is the starter rule.
-        // debugging option #1: print the tree to the console
-        System.err.println(tree.toStringTree(parser));
+            // debugging option #1: print the tree to the console
+            System.err.println(tree.toStringTree(parser));
 
-        // debugging option #2: show the tree in a window
-        // ((RuleContext)tree).inspect(parser);
+            // debugging option #2: show the tree in a window
+            // ((RuleContext)tree).inspect(parser);
 
-        // debugging option #3: walk the tree with a listener
-        //new ParseTreeWalker().walk(new WikiQueryBaseListener(), tree);
+            // debugging option #3: walk the tree with a listener
+            //new ParseTreeWalker().walk(new WikiQueryBaseListener(), tree);
 
-        // Finally, construct a Poly value by walking over the parse tree.
-        ParseTreeWalker walker = new ParseTreeWalker();
-        WikiQueryBaseListener listener = new WikiQueryBaseListener();
-        walker.walk(listener, tree);
+            // Finally, construct a Poly value by walking over the parse tree.
+            ParseTreeWalker walker = new ParseTreeWalker();
+            WikiQueryBaseListener listener = new WikiQueryBaseListener();
+            walker.walk(listener, tree);
 
-        Token type = tokens.get(1);
-        Token condition = tokens.get(3);
-        Token sort = tokens.get(4);
+            Token type = tokens.get(1);
+            Token condition = tokens.get(3);
+            Token sort = tokens.get(4);
 
-        String t = type.getText();
+            String t = type.getText();
 
 
-        String returnType = "";
+            String returnType = "";
 
-        if(t.charAt(0) == 'p') {
-            returnType = "page";
-        }
+            if(t.charAt(0) == 'p') {
+                returnType = "page";
+            }
 
-        if(t.charAt(0) == 'c'){
-            returnType = "category";
-        }
+            if(t.charAt(0) == 'c'){
+                returnType = "category";
+            }
 
-        if(t.charAt(0) == 'a'){
-            returnType = "author";
-        }
+            if(t.charAt(0) == 'a'){
+                returnType = "author";
+            }
 
-        QueryCondition eval = new QueryCondition(condition.getText());
-        return evaluateConditions(returnType, eval, sort.getText());
+            QueryCondition eval = new QueryCondition(condition.getText());
+            return evaluateConditions(returnType, eval, sort.getText());
 
         }catch (Exception e){
             throw new InvalidQueryException();
@@ -768,23 +813,23 @@ public class WikiMediator {
                         fromRight.addAll(wiki.getCategoriesOnPage(s));
                     }
                 }
-                } else {
-                    fromRight = evalForCategory(eval.right);
-                }
+            } else {
+                fromRight = evalForCategory(eval.right);
+            }
 
-                if (eval.type.equals("or")) {
-                    result.addAll(fromLeft);
-                    result.addAll(fromRight);
-                }
+            if (eval.type.equals("or")) {
+                result.addAll(fromLeft);
+                result.addAll(fromRight);
+            }
 
-                if (eval.type.equals("and")) {
-                    for (String s : fromLeft) {
-                        if (fromRight.contains(s)) {
-                            result.add(s);
-                        }
+            if (eval.type.equals("and")) {
+                for (String s : fromLeft) {
+                    if (fromRight.contains(s)) {
+                        result.add(s);
                     }
                 }
             }
+        }
 
         return result;
     }

@@ -373,4 +373,34 @@ public class Tests {
         w.getPage("Barack Obama");
         w.simpleSearch("A",100);
     }
+
+    @Test
+    public void testTrendcing() throws InterruptedException {
+        WikiMediator w = new WikiMediator();
+        w.getPage("Beans");
+        w.getPage("Beans");
+        w.getPage("Beans");
+        w.getPage("Beans");
+        w.getPage("Beans");
+        w.getPage("Beans");
+        w.getPage("Beans");
+        w.getPage("Beans");
+
+        w.getPage("Bears");
+        w.getPage("Bears");
+        w.getPage("Bears");
+        w.getPage("Bears");
+        w.getPage("Bears");
+        w.getPage("Bears");
+        w.getPage("Bears");
+
+        w.getPage("Beets");
+        w.getPage("Beets");
+        w.getPage("Beets");
+        w.getPage("Beets");
+
+        System.out.println(w.trending(2));
+
+
+    }
     }

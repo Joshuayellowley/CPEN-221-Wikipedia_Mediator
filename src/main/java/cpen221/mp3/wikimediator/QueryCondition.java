@@ -12,15 +12,20 @@ import java.util.Map;
  *  If second is null, then right is not null
  *  left != this
  *  right != this
+ *  goRight is true if this.compound is true and right == null
  *
  *
  * Abstraction Function:
  *  QueryCondition is the condition that a page, author or category must
  *  satisfy to be returned by a specific query.
  *  Text represents the string of the text of the whole condition to be evaluated
- *  If compound is true the QueryCondition is a more advanced condition.
- *
- *
+ *  If compound is true the QueryCondition is a more advanced condition and
+ *  type == "and" or type == "or" conditional.
+ *  In the case where this is a compound condition,
+ *  left represents the left side conditional and right represents the right side conditional if the
+ *  resulting left and right conditionals of this are compound.
+ *  However if left.compound == false, the condition is represented by first
+ *  and if right.compound == false, the condition is represented by second
  *
  */
 
@@ -35,6 +40,10 @@ public class QueryCondition{
     boolean compound;
     boolean goRight;
 
+    /**
+     * Creates a new instance of Query Condition
+     * @param text is the full condition to be evaluated
+     */
     public QueryCondition(String text){
         this.text = text;
         this.type = "";
@@ -43,7 +52,10 @@ public class QueryCondition{
         setUp();
     }
 
-    void setUp(){
+    /**
+     * Helper Method that sets up the recursive data tree
+     */
+    private void setUp(){
 
         this.compound = text.charAt(0) == '(';
         int index = 0;
@@ -99,7 +111,12 @@ public class QueryCondition{
         }
     }
 
-    int setUpLeftMap(){
+    /**
+     * This method is only for if the left side is not a compound condition, sets up the first map to
+     * hold the simple condition.
+     * @return the index of the character within the full condition
+     */
+    private int setUpLeftMap(){
 
 
         int i = 0;
@@ -164,9 +181,12 @@ public class QueryCondition{
         return i;
     }
 
-    void setUpRightMap(int i){
-
-
+    /**
+     * This method is only for if the right side is not a compound condition, sets up the second map to
+     * hold the simple condition.
+     * @param i the index of the character to start at within the full condition
+     */
+    private void setUpRightMap(int i){
         String temp = "";
 
         if(text.charAt(i) == 'a'){
@@ -196,20 +216,5 @@ public class QueryCondition{
             }
         }
     }
-
-//    private int getLeftSize(){
-//        int total = 0;
-//        if(this.left != null){
-//            total += this.left.getLeftSize() + 2;
-//        }
-//        for(String s : first.keySet()){
-//            total += s.length();
-//        }
-//        for(String s: first.values()){
-//            total += s.length();
-//        }
-//
-//        return total;
-//    }
 
 }
