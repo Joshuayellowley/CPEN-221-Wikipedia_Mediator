@@ -366,4 +366,12 @@ public class Tests {
         }
     }
 
+
+    @Test
+    public void logTest(){
+        WikiMediator w = new WikiMediator();
+        w.simpleSearch("Barack Obama",1);
+        w.getPage("Barack Obama");
+        w.simpleSearch("A",100);
+    }
     }

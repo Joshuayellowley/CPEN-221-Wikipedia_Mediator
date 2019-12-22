@@ -1,5 +1,8 @@
 package cpen221.mp3.wikimediator;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -89,7 +92,35 @@ public class WikiMediator {
         requestTimes.add(Instant.now());
     }
 
+    /**
+     * Helper method used to log all statistics gathered by the implementation and save onto this device's harddrive.
+     */
+    private void logData(){
+        try {
+            FileWriter fileWriter = new FileWriter("local/data");
+            PrintWriter printWriter = new PrintWriter(fileWriter);
+            printWriter.println("Times Accessed");
+            printWriter.println("______________");
+            for(Map.Entry<String,Integer> e: timesAccessed.entrySet()){
+                printWriter.println(e.getKey() + ": "+ e.getValue());
+            }
+            printWriter.println("Last Accessed");
+            printWriter.println("______________");
+            for(Map.Entry<String,Instant> e: lastAccessed.entrySet()){
+                printWriter.println(e.getKey() + ": "+ e.getValue());
+            }
 
+            printWriter.println("Request Times");
+            printWriter.println("______________");
+            for(Instant i: requestTimes){
+                printWriter.println(i);
+            }
+            printWriter.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+    }
     /**
      * Searches on en.wikipedia.org for relevant pages to the given String query.
      * The results will be returned in terms of most relevant in non-ascending order.
@@ -103,6 +134,7 @@ public class WikiMediator {
     public List<String> simpleSearch(String query, int limit){
         addRequest();
         updateAccess(query);
+        logData();
         return wiki.search(query, limit);
     }
 
@@ -124,6 +156,7 @@ public class WikiMediator {
 
         addRequest();
         updateAccess(pageTitle);
+        logData();
 
         try {
             WikiPage toGet = (WikiPage) cache.get(pageTitle);

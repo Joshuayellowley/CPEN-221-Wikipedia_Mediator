@@ -10,12 +10,9 @@ import static org.junit.Assert.*;
 
 public class cacheTests <T extends Cacheable> {
 
-    private Cache defaultCache = new Cache();
-    private Cache specificCache = new Cache(2, 20);
-    private Cache sCache = new Cache(32, 1);
-
     @Test
     public void putIntoCache(){
+        Cache specificCache = new Cache(2, 20);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -31,6 +28,7 @@ public class cacheTests <T extends Cacheable> {
 
     @Test
     public void putIntoCache2(){
+        Cache specificCache = new Cache(2, 20);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -48,6 +46,7 @@ public class cacheTests <T extends Cacheable> {
 
     @Test
     public void putIntoCache3(){
+        Cache specificCache = new Cache(2, 2000);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = new ToCache("3");
@@ -67,6 +66,7 @@ public class cacheTests <T extends Cacheable> {
 
     @Test
     public void touchInCache() {
+        Cache specificCache = new Cache(2, 20);
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -83,6 +83,8 @@ public class cacheTests <T extends Cacheable> {
 
     @Test
     public void updateInCache() {
+        Cache defaultCache = new Cache();
+
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
@@ -97,6 +99,8 @@ public class cacheTests <T extends Cacheable> {
 
     @Test
     public void clearOldEntries() {
+        Cache sCache = new Cache(32, 1);
+
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
         ToCache t3 = null;
