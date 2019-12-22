@@ -122,7 +122,6 @@ public class WikiMediatorServer {
                 System.out.println(line);
                 jsonString.append(line);
                 if (line.equals("}")) {
-                    try {
                         if(numClients <= maxRequests) {
                             JsonObject jo = mediate(jsonString);
                             out.print(jo);
