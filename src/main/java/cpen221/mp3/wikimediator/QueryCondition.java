@@ -3,6 +3,27 @@ package cpen221.mp3.wikimediator;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Representation Invariant:
+ *  text, type not null
+ *  If left is null, then first is not null
+ *  If first is null, then left is not null
+ *  If right is null, then second is not null
+ *  If second is null, then right is not null
+ *  left != this
+ *  right != this
+ *
+ *
+ * Abstraction Function:
+ *  QueryCondition is the condition that a page, author or category must
+ *  satisfy to be returned by a specific query.
+ *  Text represents the string of the text of the whole condition to be evaluated
+ *  If compound is true the QueryCondition is a more advanced condition.
+ *
+ *
+ *
+ */
+
 public class QueryCondition{
 
     String text;

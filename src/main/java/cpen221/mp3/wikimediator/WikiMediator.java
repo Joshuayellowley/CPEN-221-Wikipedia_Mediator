@@ -5,7 +5,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -370,7 +377,7 @@ public class WikiMediator {
      * Executes a detailed search given a query containing conditions of the search
      * @param query, the string to specify which pages to return
      * @return a list of page ids that correspond to the search query. If the query
-     * does not follow the proper grammar, return an empty List.
+     * does not follow the proper grammar, throws an InvalidQueryException.
      */
     public List<String> executeQuery(String query) throws InvalidQueryException{
 
@@ -429,6 +436,15 @@ public class WikiMediator {
         }
     }
 
+    /**
+     * Helper Method that works towards evaluating query conditions
+     *
+     * @param returnType, the information the query is looking to receive
+     * @param eval, the query condition to be evaluated
+     * @param sort, Specification if the query response should be in ascending or descending order or if order
+     *              is not an issue
+     * @return a list of Strings that correspond to the search query.
+     */
     private List<String> evaluateConditions(String returnType, QueryCondition eval, String sort){
 
         List<String> result = new ArrayList<>();
@@ -454,6 +470,15 @@ public class WikiMediator {
         return result;
     }
 
+
+    /**
+     * Helper Method that works towards evaluating query conditions
+     *
+     * @param eval, the query condition to be evaluated
+     *
+     * @return a list of page ids that correspond to the search query. If the query
+     * does not follow the proper grammar, throws an InvalidQueryException.
+     */
     private List<String> evalForPage(QueryCondition eval){
         List<String> result = new ArrayList<>();
         List<String> fromLeft = new ArrayList<>();
@@ -547,6 +572,13 @@ public class WikiMediator {
         return result;
     }
 
+    /**
+     * Helper Method that works towards evaluating query conditions
+     *
+     * @param eval, the query condition to be evaluated
+     *
+     * @return a list of author tags that correspond to the search query.
+     */
     private List<String> evalForAuthor(QueryCondition eval){
         List<String> result = new ArrayList<>();
         List<String> fromLeft = new ArrayList<>();
@@ -648,6 +680,13 @@ public class WikiMediator {
         return result;
     }
 
+    /**
+     * Helper Method that works towards evaluating query conditions
+     *
+     * @param eval, the query condition to be evaluated
+     *
+     * @return a list of categories that correspond to the search query.
+     */
     private List<String> evalForCategory(QueryCondition eval){
         List<String> result = new ArrayList<>();
         List<String> fromLeft = new ArrayList<>();
