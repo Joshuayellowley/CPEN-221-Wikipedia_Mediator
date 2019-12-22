@@ -1,6 +1,7 @@
 package cpen221.mp3;
 
 import cpen221.mp3.cache.Cache;
+import cpen221.mp3.wikimediator.InvalidQueryException;
 import cpen221.mp3.wikimediator.WikiMediator;
 import org.junit.Test;
 
@@ -112,6 +113,22 @@ public class Tests {
 
     }
 
+
+    @Test
+    public void testInvalidExecuteQuery() throws InvalidQueryException{
+
+        String query = "get page where title is 'Canada'";
+        WikiMediator w = new WikiMediator();
+
+        List<String> expected = new ArrayList<>();
+        expected.add("Canada");
+        try {
+            w.executeQuery(query);
+        }catch (InvalidQueryException e) {
+            System.out.println("YES");
+        }
+    }
+
     @Test
     public void testExecuteQuery1(){
 
@@ -121,22 +138,29 @@ public class Tests {
         List<String> expected = new ArrayList<>();
         expected.add("Canada");
 
-        assertEquals(expected, w.executeQuery(query));
-
+        try {
+            assertEquals(expected, w.executeQuery(query));
+        }catch (InvalidQueryException e){
+            fail();
+        }
     }
 
     @Test
     public void testExecuteQuery2(){
 
-        String query = "get page where (title is 'nintendo' or author is 'baby')";
+        String query = "get author where (title is 'Nintendo' or category is 'Super Mario')";
         WikiMediator w = new WikiMediator();
 
+        try{
         List<String> expected = (w.executeQuery(query));
 
         for(String s : expected){
             System.out.println(s);
         }
 
+        }catch (InvalidQueryException e){
+            fail();
+        }
     }
 
     @Test
@@ -145,27 +169,59 @@ public class Tests {
         String query = "get page where category is 'Illinois state senators'";
         WikiMediator w = new WikiMediator();
 
-        assertEquals(w.executeQuery(query), null);
+        try{
+            assertEquals(w.executeQuery(query), null);
 
+        }catch (InvalidQueryException e){
+            fail();
+        }
     }
 
     @Test
     public void testExecuteQuery4(){
 
-        String query = "get category where (author is 'CLCStudent' and (title is 'Barack Obama' or title is 'Naomi Klein'))";
+        String query = "get category where (author is 'CLCStudent' or (title is 'Barack Obama' or title is 'Naomi Klein'))";
         WikiMediator w = new WikiMediator();
 
-        assertEquals(w.executeQuery(query), null);
+        try{
+        for(String s : (w.executeQuery(query))){
+            System.out.println(s);
+        }
+        }catch (InvalidQueryException e){
+            fail();
+        }
 
     }
 
     @Test
     public void testExecuteQuery5(){
 
-        String query = "get page where ((author is 'AndrewOne' and author is 'Sylas') or (title is 'Barack Obama' or category is 'Games'))";
+        String query = "get page where ((author is 'AndrewOne' or author is 'Sylas') or (title is 'Barack Obama' or category is 'Trees'))";
         WikiMediator w = new WikiMediator();
 
-        assertEquals(w.executeQuery(query), null);
+        try{
+        for(String s : (w.executeQuery(query))){
+            System.out.println(s);
+        }
+        }catch (InvalidQueryException e){
+            fail();
+        }
+
+    }
+
+    @Test
+    public void testExecuteQuery6(){
+
+        String query = "get category where (title is 'Grape' and (title is 'Grape' or title is 'Christmas'))";
+        WikiMediator w = new WikiMediator();
+
+        try{
+        for(String s : (w.executeQuery(query))){
+            System.out.println(s);
+        }
+        }catch (InvalidQueryException e){
+            fail();
+        }
 
     }
 

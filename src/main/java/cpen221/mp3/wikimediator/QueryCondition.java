@@ -72,7 +72,7 @@ public class QueryCondition{
 
         } else {
 
-            second.put(null, null);
+
             right = new QueryCondition(text.substring(index));
 
         }
@@ -167,7 +167,7 @@ public class QueryCondition{
             if (text.charAt(g) == '\'') {
                 for (int p = g + 1; p < text.length(); p++) {
                     if (text.charAt(p) == '\'') {
-                        second.put(temp, text.substring(g, p));
+                        second.put(temp, text.substring(g+1, p));
                         g = p;
                         break;
                     }

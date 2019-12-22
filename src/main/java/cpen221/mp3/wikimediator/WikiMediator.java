@@ -283,7 +283,6 @@ public class WikiMediator {
      * @return a list of page ids starting with startPage, and ending with stopPage.
      *          Each page is connected to the following page in the path. If startPage/stopPage
      *          is not a valid page, or no path exists, then return an empty list.
-     *
      */
     public List<String> getPath(String startPage, String stopPage){
 
@@ -328,7 +327,7 @@ public class WikiMediator {
      * @return a list of page ids that correspond to the search query. If the query
      * does not follow the proper grammar, return an empty List.
      */
-    public List<String> executeQuery(String query){
+    public List<String> executeQuery(String query) throws InvalidQueryException{
 
         CharStream stream = new ANTLRInputStream(query);
         WikiQueryLexer lexer = new WikiQueryLexer(stream);
@@ -340,8 +339,8 @@ public class WikiMediator {
         parser.reportErrorsAsExceptions();
 
         // Generate the parse tree using the starter rule.
-        ParseTree tree = parser.wikiquery(); // "root" is the starter rule.
-
+        try {
+            ParseTree tree = parser.wikiquery(); // "root" is the starter rule.
         // debugging option #1: print the tree to the console
         System.err.println(tree.toStringTree(parser));
 
@@ -375,9 +374,13 @@ public class WikiMediator {
             returnType = "author";
         }
 
-         QueryCondition eval = new QueryCondition(condition.getText());
-
+        QueryCondition eval = new QueryCondition(condition.getText());
         return evaluateConditions(returnType, eval);
+
+        }catch (Exception e){
+            System.out.println("Invalid Query!");
+            return new ArrayList<>();
+        }
     }
 
     private List<String> evaluateConditions(String returnType, QueryCondition eval){
@@ -396,15 +399,17 @@ public class WikiMediator {
             result = evalForCategory(eval);
         }
 
-
         return result;
     }
 
     private List<String> evalForPage(QueryCondition eval){
         List<String> result = new ArrayList<>();
+        List<String> fromLeft = new ArrayList<>();
+        List<String> fromRight = new ArrayList<>();
 
+        String search = "";
         if(!eval.compound){
-            String search = "";
+
             for(String s : eval.first.keySet()){
                 search = s;
             }
@@ -420,10 +425,71 @@ public class WikiMediator {
                     result.add(temp);
                 }
             }
-        }else if(eval.left == null && eval.right == null){
 
+            if(search.equals("author")){
+                String temp = eval.first.get(search);
+                result.addAll(wiki.getUserUploads(temp));
+            }
 
+        }else{
+            if(eval.left == null){
+                for(String s : eval.first.keySet()){
+                    search = s;
+                }
+                String temp = eval.first.get(search);
 
+                if(search.equals("category")){
+                    fromLeft = wiki.getCategoryMembers(temp);
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromLeft.add(temp);
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromLeft.addAll(wiki.getUserUploads(temp));
+                }
+            }else{
+                fromLeft = evalForPage(eval.left);
+            }
+
+            if(eval.right == null){
+                for(String s : eval.second.keySet()){
+                    search = s;
+                }
+                String temp = eval.second.get(search);
+
+                if(search.equals("category")){
+                    fromRight = wiki.getCategoryMembers(temp);
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromRight.add(temp);
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromRight.addAll(wiki.getUserUploads(temp));
+                }
+            }else{
+                fromRight = evalForPage(eval.right);
+            }
+
+            if(eval.type.equals("or")){
+                result.addAll(fromLeft);
+                result.addAll(fromRight);
+            }
+
+            if(eval.type.equals("and")){
+                for(String s : fromLeft){
+                    if(fromRight.contains(s)){
+                        result.add(s);
+                    }
+                }
+            }
         }
 
         return result;
@@ -431,22 +497,98 @@ public class WikiMediator {
 
     private List<String> evalForAuthor(QueryCondition eval){
         List<String> result = new ArrayList<>();
+        List<String> fromLeft = new ArrayList<>();
+        List<String> fromRight = new ArrayList<>();
+        String search = "";
 
         if(!eval.compound){
-            String search = "";
+
             for(String s : eval.first.keySet()){
                 search = s;
             }
 
             if(search.equals("category")){
                 String temp = eval.first.get(search);
-                result = wiki.getCategoryMembers(temp);
+                List<String> authorList = wiki.getCategoryMembers(temp);
+                for(String s : authorList){
+                    result.add(wiki.getLastEditor(s));
+                }
             }
 
             if(search.equals("title")){
                 String temp = eval.first.get(search);
                 if(wiki.exists(temp)) {
-                    result.add(temp);
+                    result.add(wiki.getLastEditor(temp));
+                }
+            }
+
+            if(search.equals("author")){
+                result.add(eval.first.get(search));
+            }
+
+        }else{
+            if(eval.left == null){
+                for(String s : eval.first.keySet()){
+                    search = s;
+                }
+                String temp = eval.first.get(search);
+
+                if(search.equals("category")){
+                    List<String> authorList = wiki.getCategoryMembers(temp);
+                    for(String s : authorList){
+                        fromLeft.add(wiki.getLastEditor(s));
+                    }
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromLeft.add(wiki.getLastEditor(temp));
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromLeft.add(temp);
+                }
+            }else{
+                fromLeft = evalForAuthor(eval.left);
+            }
+
+            if(eval.right == null){
+                for(String s : eval.second.keySet()){
+                    search = s;
+                }
+                String temp = eval.second.get(search);
+
+                if(search.equals("category")){
+                    List<String> authorList = wiki.getCategoryMembers(temp);
+                    for(String s : authorList){
+                        fromRight.add(wiki.getLastEditor(s));
+                    }
+                }
+
+                if(search.equals("title")){
+                    if(wiki.exists(temp)) {
+                        fromRight.add(wiki.getLastEditor(temp));
+                    }
+                }
+
+                if(search.equals("author")){
+                    fromRight.add(temp);
+                }
+            }else{
+                fromRight = evalForAuthor(eval.right);
+            }
+
+            if(eval.type.equals("or")){
+                result.addAll(fromLeft);
+                result.addAll(fromRight);
+            }
+
+            if(eval.type.equals("and")){
+                for(String s : fromLeft){
+                    if(fromRight.contains(s)){
+                        result.add(s);
+                    }
                 }
             }
         }
@@ -456,25 +598,102 @@ public class WikiMediator {
 
     private List<String> evalForCategory(QueryCondition eval){
         List<String> result = new ArrayList<>();
+        List<String> fromLeft = new ArrayList<>();
+        List<String> fromRight = new ArrayList<>();
+        String search = "";
 
         if(!eval.compound){
-            String search = "";
             for(String s : eval.first.keySet()){
                 search = s;
             }
 
             if(search.equals("category")){
                 String temp = eval.first.get(search);
-                result = wiki.getCategoryMembers(temp);
+                result.add(temp);
             }
 
             if(search.equals("title")){
                 String temp = eval.first.get(search);
                 if(wiki.exists(temp)) {
-                    result.add(temp);
+                    result.addAll(wiki.getCategoriesOnPage(temp));
                 }
             }
-        }
+
+            if(search.equals("author")){
+                String temp = eval.first.get(search);
+                List<String> pageList = (wiki.getUserUploads(temp));
+                for(String s : pageList){
+                    result.addAll(wiki.getCategoriesOnPage(s));
+                }
+
+            }
+
+        }else {
+            if (eval.left == null) {
+                for (String s : eval.first.keySet()) {
+                    search = s;
+                }
+                String temp = eval.first.get(search);
+
+                if (search.equals("category")) {
+                    fromLeft.add(temp);
+                }
+
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
+                        fromLeft.addAll(wiki.getCategoriesOnPage(temp));
+                    }
+                }
+
+                if (search.equals("author")) {
+                    List<String> authorList = (wiki.getUserUploads(temp));
+                    for (String s : authorList) {
+                        fromLeft.addAll(wiki.getCategoriesOnPage(s));
+                    }
+                }
+            } else {
+                fromLeft = evalForCategory(eval.left);
+            }
+
+            if (eval.right == null) {
+                for (String s : eval.second.keySet()) {
+                    search = s;
+                }
+                String temp = eval.second.get(search);
+
+                if (search.equals("category")) {
+                    fromRight.add(temp);
+                }
+
+                if (search.equals("title")) {
+                    if (wiki.exists(temp)) {
+                        fromRight.addAll(wiki.getCategoriesOnPage(temp));
+                    }
+                }
+
+                if (search.equals("author")) {
+                    List<String> authorList = (wiki.getUserUploads(temp));
+                    for (String s : authorList) {
+                        fromRight.addAll(wiki.getCategoriesOnPage(s));
+                    }
+                }
+                } else {
+                    fromRight = evalForCategory(eval.right);
+                }
+
+                if (eval.type.equals("or")) {
+                    result.addAll(fromLeft);
+                    result.addAll(fromRight);
+                }
+
+                if (eval.type.equals("and")) {
+                    for (String s : fromLeft) {
+                        if (fromRight.contains(s)) {
+                            result.add(s);
+                        }
+                    }
+                }
+            }
 
         return result;
     }

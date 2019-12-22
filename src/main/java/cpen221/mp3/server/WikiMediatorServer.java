@@ -7,6 +7,7 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 import com.google.gson.*;
+import cpen221.mp3.wikimediator.InvalidQueryException;
 import cpen221.mp3.wikimediator.WikiMediator;
 
 import java.util.IllegalFormatException;
@@ -208,7 +209,11 @@ public class WikiMediatorServer {
             response = mediator.getPath(startPage,stopPage);
         }
         else if(function.equals("executeQuery")){
-            response = mediator.executeQuery(query);
+            try {
+                response = mediator.executeQuery(query);
+            }catch (InvalidQueryException e){
+                System.out.println("Invalid Query!");
+            }
         }
         return null;
     }
