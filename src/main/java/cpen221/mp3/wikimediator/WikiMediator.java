@@ -45,6 +45,7 @@ public class WikiMediator {
 
     private static List<Instant> requestTimes = new ArrayList<>();
     private static HashMap<String,Instant> lastAccessed = new HashMap<>();
+    //private static HashMap<String,Integer> last30Secs = new HashMap<>();
     private static HashMap<String,Integer> timesAccessed = new HashMap<>();
     private Wiki wiki = new Wiki("en.wikipedia.org");
     private Cache cache = new Cache(256, 12*60*60);
@@ -76,6 +77,8 @@ public class WikiMediator {
         }
     }
 
+
+
     /**
      * Helper method used in all basic requests to keep track of all requests made to the cache.
      * Adds an Instant to requestTimes at the current time.
@@ -98,11 +101,9 @@ public class WikiMediator {
      * @mutates this.timesAccessed, this.lastAccessed, this.requestTimes
      */
     public List<String> simpleSearch(String query, int limit){
-
         addRequest();
         updateAccess(query);
         return wiki.search(query, limit);
-
     }
 
 
@@ -292,6 +293,11 @@ public class WikiMediator {
 
         Instant begin = Instant.now();
         boolean foundIt = false;
+
+        if(!wiki.exists(startPage) || !wiki.exists(stopPage)){
+            return new ArrayList<>();
+        }
+
         if(startPage.equals(stopPage)){
             List<String> single = new ArrayList<>();
             single.add(startPage);
@@ -299,6 +305,7 @@ public class WikiMediator {
         }
 
         List<String> startList = wiki.getLinksOnPage(startPage);
+        Set<String> Hop2List = new HashSet<>();
         List<String> stopList = wiki.getLinksOnPage(stopPage);
         List<String> result = new ArrayList<>();
 
@@ -312,8 +319,9 @@ public class WikiMediator {
                 return result;
             }
 
+            Hop2List.addAll(wiki.getLinksOnPage(s));
 
-            if(Duration.between(begin,Instant.now()).toSeconds() >= 290){
+            if(Duration.between(begin,Instant.now()).toSeconds() >= 280){
                 return new ArrayList<>();
             }
         }
@@ -361,6 +369,8 @@ public class WikiMediator {
 
         Token type = tokens.get(1);
         Token condition = tokens.get(3);
+        Token sort = tokens.get(4);
+
         String t = type.getText();
 
 
@@ -379,14 +389,14 @@ public class WikiMediator {
         }
 
         QueryCondition eval = new QueryCondition(condition.getText());
-        return evaluateConditions(returnType, eval);
+        return evaluateConditions(returnType, eval, sort.getText());
 
         }catch (Exception e){
             throw new InvalidQueryException();
         }
     }
 
-    private List<String> evaluateConditions(String returnType, QueryCondition eval){
+    private List<String> evaluateConditions(String returnType, QueryCondition eval, String sort){
 
         List<String> result = new ArrayList<>();
 
@@ -400,6 +410,12 @@ public class WikiMediator {
 
         if(returnType.equals("category")){
             result = evalForCategory(eval);
+        }
+
+        if(sort.equals("asc")){
+            Collections.sort(result);
+        }else if(sort.equals("desc")){
+            Collections.sort(result, Collections.reverseOrder());
         }
 
         return result;

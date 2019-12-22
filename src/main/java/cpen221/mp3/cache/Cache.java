@@ -99,6 +99,7 @@ public class Cache<T extends Cacheable> {
 
         if(storage.size() < this.capacity) {
             storage.put(t, Instant.now());
+            lastTimeOpened.put(t, Instant.now());
             return true;
         }else{
             for(T b : storage.keySet()){
@@ -107,26 +108,13 @@ public class Cache<T extends Cacheable> {
                 }
             }
 
-            long min = 0;
+            long min = Long.MIN_VALUE;
             T toRemove = null;
             if(lastTimeOpened.size() != 0) {
                 for (T q : lastTimeOpened.keySet()) {
                     Instant i = lastTimeOpened.get(q);
-                    long timeElapsed = Duration.between(i, Instant.now()).toSeconds();
-                    if (timeElapsed > min) {
-                        min = timeElapsed;
-                        toRemove = q;
-                    }
-                }
-                storage.remove(toRemove);
-                lastTimeOpened.remove(toRemove);
-                storage.put(t, Instant.now());
-                lastTimeOpened.put(t, Instant.now());
-
-            }else{
-                for (T q : storage.keySet()) {
-                    Instant i = storage.get(q);
-                    long timeElapsed = Duration.between(i, Instant.now()).toSeconds();
+                    long timeElapsed = Duration.between(i, Instant.now()).toMillis();
+                    //System.out.println(timeElapsed);
                     if (timeElapsed > min) {
                         min = timeElapsed;
                         toRemove = q;
@@ -137,7 +125,7 @@ public class Cache<T extends Cacheable> {
                 storage.put(t, Instant.now());
                 lastTimeOpened.put(t, Instant.now());
             }
-
+//
         }
         return true;
     }
@@ -222,11 +210,18 @@ public class Cache<T extends Cacheable> {
      */
     private void clearOldEntries(){
 
+        List<T> toRemove = new ArrayList<>();
         for(T t : storage.keySet()){
             if(Duration.between(storage.get(t),Instant.now()).toSeconds() >= this.timeout){
-                storage.remove(t);
+                toRemove.add(t);
             }
         }
+
+        for(T t : toRemove){
+            storage.remove(t);
+            lastTimeOpened.remove(t);
+        }
+
     }
 
 }

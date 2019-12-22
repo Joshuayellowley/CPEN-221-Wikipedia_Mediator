@@ -4,12 +4,15 @@ import cpen221.mp3.cache.Cache;
 import cpen221.mp3.cache.Cacheable;
 import org.junit.Test;
 
+import java.util.NoSuchElementException;
+
 import static org.junit.Assert.*;
 
 public class cacheTests <T extends Cacheable> {
 
     private Cache defaultCache = new Cache();
     private Cache specificCache = new Cache(2, 20);
+    private Cache sCache = new Cache(32, 1);
 
     @Test
     public void putIntoCache(){
@@ -44,6 +47,25 @@ public class cacheTests <T extends Cacheable> {
     }
 
     @Test
+    public void putIntoCache3(){
+        ToCache t1 = new ToCache("1");
+        ToCache t2 = new ToCache("2");
+        ToCache t3 = new ToCache("3");
+        ToCache t4 = new ToCache("4");
+
+        assertTrue(specificCache.put(t1));
+        assertTrue(specificCache.put(t2));
+        assertTrue(specificCache.put(t3));
+        assertTrue(specificCache.put(t4));
+        assertFalse(specificCache.update(t3));
+        assertTrue(specificCache.update(t4));
+        assertFalse(specificCache.update(t1));
+        assertTrue(specificCache.put(t1));
+        assertFalse(specificCache.update(t4));
+        assertTrue(specificCache.update(t1));
+    }
+
+    @Test
     public void touchInCache() {
         ToCache t1 = new ToCache("1");
         ToCache t2 = new ToCache("2");
@@ -59,22 +81,57 @@ public class cacheTests <T extends Cacheable> {
         assertTrue(specificCache.touch(t2.id()));
     }
 
+    @Test
+    public void updateInCache() {
+        ToCache t1 = new ToCache("1");
+        ToCache t2 = new ToCache("2");
+        ToCache t3 = null;
+        ToCache t4 = new ToCache("4");
 
+        assertTrue(defaultCache.put(t1));
+        assertTrue(defaultCache.put(t2));
+        assertTrue(defaultCache.update(t1));
+        assertFalse(defaultCache.update(t4));
+        assertTrue(defaultCache.update(t2));
+    }
 
+    @Test
+    public void clearOldEntries() {
+        ToCache t1 = new ToCache("1");
+        ToCache t2 = new ToCache("2");
+        ToCache t3 = null;
+        ToCache t4 = new ToCache("4");
 
-
-
-
-    private class ToCache implements Cacheable{
-
-        String id;
-
-        public ToCache(String id){
-            this.id = id;
+        assertTrue(sCache.put(t1));
+        assertTrue(sCache.put(t2));
+        try
+        {
+            Thread.sleep(1500);
+        }
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
         }
 
-        public String id(){ return this.id;}
+        try {
+            sCache.get(t1.id());
+            fail();
+        }catch(NoSuchElementException e){
+
+        }
 
     }
 
-}
+
+
+    private class ToCache implements Cacheable {
+
+        String id;
+
+        public ToCache(String id) {
+            this.id = id;
+        }
+
+        public String id(){return this.id;}
+    }
+    }

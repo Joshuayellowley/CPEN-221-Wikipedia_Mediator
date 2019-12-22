@@ -3,8 +3,7 @@ package cpen221.mp3.server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.IllegalFormatException;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 import com.google.gson.*;
@@ -325,7 +324,14 @@ public class WikiMediatorServer {
                 break;
             }
             case "executeQuery": {
-                Future<List<String>> future = executor.submit(() -> mediator.executeQuery(finalQuery));
+
+                Future<List<String>> future = executor.submit(() -> {
+                    try {
+                        return mediator.executeQuery(finalQuery);
+                    } catch (InvalidQueryException e) {
+                        throw new IllegalArgumentException();
+                    }
+                });
                 try {
                     List<String> response = future.get(timeout, TimeUnit.SECONDS);
                     finished.add("status", new JsonPrimitive("success"));
