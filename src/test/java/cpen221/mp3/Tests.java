@@ -400,6 +400,7 @@ public class Tests {
         w.getPage("Beets");
 
         System.out.println(w.trending(2));
+        System.out.println(w.peakLoad30s());
 
 
     }
