@@ -36,8 +36,6 @@ public class Tests {
         assertEquals("",(w.getPage("BuBsbs")));
     }
 
-
-
     @Test
     public void testGetConnectedPages(){
         System.out.println(w.getConnectedPages("MissingNo.", 2));
@@ -103,30 +101,31 @@ public class Tests {
     }
 
     @Test
-    public void testBasicGetPage(){
+    public void testBasicGetPath(){
 
         String s1 = "Canada";
         String s2 = "Mexico";
         WikiMediator w = new WikiMediator();
 
-        assertEquals(w.getPath(s1,s2), new ArrayList<>());
+        for(String s :(w.getPath(s1,s2))){
+            System.out.println(s);
+        }
 
     }
 
 
     @Test
-    public void testInvalidExecuteQuery() throws InvalidQueryException{
+    public void testInvalidExecuteQuery(){
 
-        String query = "get page where title is 'Canada'";
+        String query = "but page where title is 'Canada'";
         WikiMediator w = new WikiMediator();
 
         List<String> expected = new ArrayList<>();
         expected.add("Canada");
         try {
             w.executeQuery(query);
-        }catch (InvalidQueryException e) {
-            System.out.println("YES");
-        }
+            fail("Should have thrown an exception.");
+        }catch (InvalidQueryException e) { }
     }
 
     @Test
@@ -170,8 +169,9 @@ public class Tests {
         WikiMediator w = new WikiMediator();
 
         try{
-            assertEquals(w.executeQuery(query), null);
-
+           for(String s :w.executeQuery(query)){
+                System.out.println(s);
+            }
         }catch (InvalidQueryException e){
             fail();
         }
@@ -180,7 +180,7 @@ public class Tests {
     @Test
     public void testExecuteQuery4(){
 
-        String query = "get category where (author is 'CLCStudent' or (title is 'Barack Obama' or title is 'Naomi Klein'))";
+        String query = "get category where ((author is 'CLCStudent' or title is 'Barack Obama') or title is 'Naomi Klein')";
         WikiMediator w = new WikiMediator();
 
         try{
@@ -196,7 +196,7 @@ public class Tests {
     @Test
     public void testExecuteQuery5(){
 
-        String query = "get page where ((author is 'AndrewOne' or author is 'Sylas') or (title is 'Barack Obama' or category is 'Trees'))";
+        String query = "get page where ((author is 'AndrewOne' or author is 'Sylas') and (title is 'Barack Obama' or category is 'Trees'))";
         WikiMediator w = new WikiMediator();
 
         try{

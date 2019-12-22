@@ -153,6 +153,10 @@ public class WikiMediator {
 
         addRequest();
 
+        if(!wiki.exists(pageTitle)){
+            return new ArrayList<>();
+        }
+
         if(hops == 0){
             List<String> single = new ArrayList<>();
             single.add(pageTitle);
@@ -378,8 +382,7 @@ public class WikiMediator {
         return evaluateConditions(returnType, eval);
 
         }catch (Exception e){
-            System.out.println("Invalid Query!");
-            return new ArrayList<>();
+            throw new InvalidQueryException();
         }
     }
 
