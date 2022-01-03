@@ -2,8 +2,6 @@
 
 # Wikipedia Mediator and Graph Databases
 
-This project was completed as apart of CPEN 221: Principles of Software Construction in November 2019.
-
 Following the guidelines of the cache abstract data type, an implementation of a cache was created with support for basic operations such as removing and adding objects to a cache and keeping only up to date items in the cache while removing the last recently used item when space in the cache runs out.
 
 Using this cache, a WikiMediator class utilizes the cache to hold wikipedia pages to limit the processing time to fetch information from wikipedia.  Additionally, there is support for searching wikipedia, getting page text, looking at recent requests made on the mediator and more described within the method Javadocs.
